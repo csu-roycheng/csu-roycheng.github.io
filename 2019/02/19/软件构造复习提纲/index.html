@@ -1,0 +1,367 @@
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>软件构造复习提纲 | RoyCheng's Blog</title><meta name="keywords" content="软件构造,复习提纲"><meta name="author" content="CSU-RoyCheng"><meta name="copyright" content="CSU-RoyCheng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Part 1软件构造是编码加调试，包括部分的详细设计和单元测试、集成测试以及其他活动，即软件构造不等于编码实现 测试是为了发现错误，调试是为了确定错误的位置并修改错误 SOA–service oriented architecture 面向服务的架构模型：一个服务有多个消费者，每个消费者都对服务有自己特定的期望，服务供应商应该演化以满足期望的变化 CDC–consumer driven contr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软件构造复习提纲">
+<meta property="og:url" content="https://csu-roychengc.github.io/2019/02/19/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/index.html">
+<meta property="og:site_name" content="RoyCheng&#39;s Blog">
+<meta property="og:description" content="Part 1软件构造是编码加调试，包括部分的详细设计和单元测试、集成测试以及其他活动，即软件构造不等于编码实现 测试是为了发现错误，调试是为了确定错误的位置并修改错误 SOA–service oriented architecture 面向服务的架构模型：一个服务有多个消费者，每个消费者都对服务有自己特定的期望，服务供应商应该演化以满足期望的变化 CDC–consumer driven contr">
+<meta property="og:locale">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2019-02-19T03:38:48.000Z">
+<meta property="article:modified_time" content="2019-02-19T03:40:57.197Z">
+<meta property="article:author" content="CSU-RoyCheng">
+<meta property="article:tag" content="软件构造">
+<meta property="article:tag" content="复习提纲">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://csu-roychengc.github.io/2019/02/19/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '软件构造复习提纲',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2019-02-19 11:40:57'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">33</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">RoyCheng's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">软件构造复习提纲</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2019-02-19T03:38:48.000Z" title="Created 2019-02-19 11:38:48">2019-02-19</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2019-02-19T03:40:57.197Z" title="Updated 2019-02-19 11:40:57">2019-02-19</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B/">软件工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="软件构造复习提纲"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Part-1"><a href="#Part-1" class="headerlink" title="Part 1"></a><strong>Part 1</strong></h1><p>软件构造是编码加调试，包括部分的详细设计和单元测试、集成测试以及其他活动，即软件构造不等于编码实现</p>
+<p>测试是为了发现错误，调试是为了确定错误的位置并修改错误</p>
+<p>SOA–service oriented architecture 面向服务的架构模型：一个服务有多个消费者，每个消费者都对服务有自己特定的期望，服务供应商应该演化以满足期望的变化</p>
+<p>CDC–consumer driven contract 消费者驱动契约：解决SOA问题</p>
+<p>支持契约式编程的语言Eiffel</p>
+<p>契约式编程：根据事先给定的前置条件、后置条件和不变式来实现代码</p>
+<p>隐喻并非是简单的用一个名词对软件事务进行类比，还包含了对类比的事物之间的体验和分析</p>
+<p>隐喻更像启示，而不是算法，帮助开发人员加深对编程的理解</p>
+<p>软件构造的前期准备工作的目标：降低风险，避免糟糕的需求分析和项目计划</p>
+<p>软件项目类型：性命攸关（序列式开发）、使命攸关、一般商业系统（迭代式开发）</p>
+<p>序列式开发：使用瀑布模型、适用于需求稳定的情况，设计简单，后期更改代价高</p>
+<p>迭代式开发：整个工作被组织成一系列迭代过程，适用于需求经常变更的情况，设计复杂，后期更改代价低</p>
+<p>RUP(Rational Unified Process)：统一软件开发过程</p>
+<p>开始构建的先决条件：明确问题定义（整个开发的基础）、明确需求规约、明确的架构设计（软件设计的高层部分）</p>
+<p>需求定义：详细规定了软件系统应该做什么</p>
+<p>软件架构的组成：程序组织、主要的类、数据设计、业务规则、UI设计、安全性、错误处理、容错性、变更策略、国际化/本地化</p>
+<p>软件架构的两个要素：元件划分、设计决定</p>
+<p>80/20原则</p>
+<p>前期准备：10-20%的工作量、20-30%的时间</p>
+<h1 id="Part-2"><a href="#Part-2" class="headerlink" title="Part 2"></a><strong>Part 2</strong></h1><p>软件的首要技术使命：管理复杂度</p>
+<p>理想的设计特征：最大程度降低复杂化、易于维护、可扩展性、可复用性、可移植性、高扇入低扇出、松耦合</p>
+<p>设计的层次：软件系统、分解成子系统和包、分解成包中的类、分解成类中的子程序和数据、子程序内部</p>
+<p>子程序：具有一定功能的，可以调用的函数或过程</p>
+<p>模块：数据及作用于数据的子程序的集合</p>
+<p>为什么要模块化：提高维护性</p>
+<p>模块独立程度的衡量标准：内聚性、耦合性</p>
+<p>内聚性：一个模块/子程序内各种操作之间互相联系的紧密程度–每个模块/子程序只做一个工作</p>
+<p>耦合性：软件结构内各个模块的关联程度</p>
+<p>内聚性：功能内聚（最高）、顺序内聚（较高）、通讯内聚（中）、临时内聚（中）、过程内聚、偶然内聚（低）、时间内聚（低）、逻辑内聚（低）</p>
+<p>耦合性：无任何连接、数据耦合、控制耦合、公共环境的耦合、内容耦合</p>
+<p>过程内聚和顺序内聚的区别：使用的数据是不同的/使用的数据是相同的</p>
+<p>模块的封装部分是内部信息，公开部分是接口和公开信息</p>
+<p>常见需要隐含的信息：容易被改动的区域、复杂的数据、复杂的逻辑</p>
+<p>模块包括：数据、数据类型、数据操作、公共和局部操作</p>
+<p>ADT：一组数据和对应这组数据的操作的集合</p>
+<p>类：一组数据和子程序的集合</p>
+<p>ADT + 封装、继承、多态 = 类，而ADT是弱封装</p>
+<p>类接口提供了类公开的操作，普通接口只提供了操作的声明</p>
+<p>类接口需要一致的抽象、良好的封装</p>
+<p>继承：一个类是另一个类的特化–is a 关系</p>
+<p>包含：一个类中拥有另一个类–has a 关系</p>
+<p>包含通过成员数据来实现，不得已的情况下可以用private的继承实现has a关系</p>
+<p>用public继承实现is a关系</p>
+<p>LSP原则使得继承降低复杂度</p>
+<p>接口继承：子接口是父接口的扩充或细化</p>
+<p>实现继承：派生类同时继承函数的接口和实现部分        慎用</p>
+<p>实现继承会带来更多的耦合问题</p>
+<p>继承关系容易产生基类和子类的强耦合</p>
+<h1 id="Part-3"><a href="#Part-3" class="headerlink" title="Part 3"></a><strong>Part 3</strong></h1><p>墨菲法则：所有有可能出错的事物终将出错–所有的程序都有缺陷</p>
+<p>防御式编程的目标：提高代码质量、提高代码可读性、使程序运行可预测、保护程序免受非法数据的破坏</p>
+<p>断言：表示程序运行到此处需要满足的条件，能使程序运行时自检</p>
+<p>断言 = 布尔表达式 + 断言不成立输出的信息</p>
+<p>错误处理代码：检查预期发生的状况，检查有害的输入数据</p>
+<p>断言：检查绝不该发生的情况，检查是否有bug</p>
+<p>避免把需要运行的代码放到断言中；一般先使用断言，在使用错误处理代码；用断言注释并验证前条件和后条件</p>
+<p>错误处理技术：返回中立值、返回下一个正确的值、返回上一个正确的值、输出错误信息、关闭程序。。。</p>
+<p>异常：把代码中的错误或异常事件传递给调用方代码的一种特殊手段</p>
+<p>异常结构：子程序使用throw抛出异常对象，再传递给上层；try-catch捕获异常</p>
+<p>异常处理机制涉及的要素：异常对象、异常对象的抛出、异常的捕获</p>
+<p>finally：关闭流、关闭连接、释放销毁资源</p>
+<p>C++提供RAII机制取代finally</p>
+<p>RAII（Resource Acquisition is Initialization）：资源获取即初始化，资源从析构函数释放</p>
+<p>finally针对特定应用，RAII针对资源本身</p>
+<p>隔离部分是脏数据，应使用错误处理技术；隔离区内部的是干净数据，应使用断言机制</p>
+<p>去除检查细微错误，使程序硬性崩溃的代码</p>
+<p>保留检查重大错误，使程序稳妥崩溃的代码，记录错误信息的代码</p>
+<h1 id="Part-4"><a href="#Part-4" class="headerlink" title="Part 4"></a><strong>Part 4</strong></h1><p>变量定义和声明的规则：关闭隐式声明，声明所有变量，遵循命名规则</p>
+<p>变量初始化原则：在声明时初始化，在靠近变量第一次使用的时候声明和初始化，需要的情况下使用final和const，注意累加器和计数器，使用构造函数初始化</p>
+<p>变量作用域：使变量引用局部化，缩短变量的生存时间</p>
+<p>减小跨度和攻击窗口</p>
+<p>以上增强可读性和可维护性</p>
+<p>变量与数值的绑定时间越晚越好</p>
+<p>绑定时间的种类：编码时，编译时，加载时，对象实例化时，即时</p>
+<p>数据类型与控制结构的关系：序列型数据–顺序，选择型数据–if/case，迭代型数据–循环</p>
+<h1 id="Part-5"><a href="#Part-5" class="headerlink" title="Part 5"></a><strong>Part 5</strong></h1><p>语句类型：顺序型语句，条件语句，控制循环语句，特殊控制结构，表驱动法</p>
+<p>条件语句使用原则：首先写代码的正常路劲，在处理其他情况，把异常代码路径当作防卫语句处理；把正常情况放在if后面，if子句应该有意义；用布尔函数简化判断；小心使用switch</p>
+<p>循环的种类：计数循环，连续求值的循环，无限循环，迭代器循环</p>
+<p>带退出的循环：退出条件应该放在一处，用注释阐明操作意图</p>
+<p>把循环看作黑盒子</p>
+<p>进入循环：尽量在一个地方进入循环，在循环之前初始化，如何选择while/for循环</p>
+<p>循环体：明确循环体的部分（用大括号包围），避免空循环，注意循环内务操作应放在开始或结尾</p>
+<p>循环内务操作：控制循环的变量，如 i++</p>
+<p>退出循环：明确退出循环的条件，避免使用最终的循环下标取值</p>
+<p>不常见的控制结构/特殊的控制结构：子程序中多处返回，goto，递归</p>
+<p>多处返回的原则：增强可读性，用防卫子句简化逻辑</p>
+<p>递归：确保递归终止条件，用安全计数器防止无限递归，避免循环递归</p>
+<p>goto：goto增加复杂度，降低程序性能，格式难以安排 / 可减少重复代码，加快运行速度；不能随意使用</p>
+<p>表驱动法：直接访问，索引访问，阶梯访问</p>
+<h1 id="Part-6"><a href="#Part-6" class="headerlink" title="Part 6"></a><strong>Part 6</strong></h1><p>协同构建包括：代码集体所有，代码评审，结对编程</p>
+<p>协同构建的目的是改善代码质量</p>
+<p>代码集体所有的好处：提高代码质量，人员离开项目的影响减少，改错的周期减少</p>
+<p>结对编程：增加10-25%成本，节省45%时间</p>
+<p>评审包括：检视/审查/详查（Inspection，正式的）、走查（Walkthrough，非正式的）、技术评审（Technical Review，正式的）</p>
+<p>评审步骤：计划、概述（可选）、准备、详查会议、第三个小时的会议（可选）、返工、跟进</p>
+<p>开发者测试：单元测试、组件测试、集成测试、回归测试、系统测试</p>
+<p>测试又分为黑盒和白盒测试</p>
+<p>开发者测试占整个项目时间的8-25%</p>
+<p>传统的开发者测试是单元和集成测试</p>
+<p>重构的类型：数据级的重构、语句级的重构、子程序级的重构、类实现的重构、类接口的重构、系统级的重构</p>
+<p>重构：在不改变软件的外部行为的条件下，对其内部结构进行改变，使之更容易理解和修改</p>
+<p>安全的重构：保存原始代码、设置检查点、减缓重构的步伐（每次重构小部分）。。。</p>
+<p>重构策略：关注高复杂度的模块、关注易错的模块、修改缺陷时重构。。。</p>
+<p>代码调优（code tuning）：修改正确的代码使其更有效地运行；调优一般是影响一个类或几行代码的小规模更改</p>
+<p>注意代码调优和重构的区别</p>
+<p>管理构建的关键问题—-如何鼓励良好的编程实践</p>
+<p>配置管理：系统化地定义项目的工作和处理变化，使项目一直保持其完整性的实践活动</p>
+<h1 id="Part-7"><a href="#Part-7" class="headerlink" title="Part 7"></a><strong>Part 7</strong></h1><p>图灵机的思想：用机器来模拟人们用纸笔进行数学运算的过程（在纸上写下或擦除某种符号，把注意力从纸的一个位置移动到另一个位置）</p>
+<p>图灵机的原理/构造：无限长带有小格子的纸带，读写头，控制规则表，状态寄存器</p>
+<p>七元组：{ Q，Σ，Γ，δ，q0, qaccept, qreject }，Q相当于状态寄存器，Σ相当于无限长的纸带，δ相当于控制规则表，q0是起始状态，qaccept是接受状态，qreject是拒绝状态</p>
+<p>形式文法：G = { V, T, S, P }，V相当于Γ，S相当于q0，P相当于δ</p>
+<p>基于代数和逻辑的方法：larch，clear，obj，cafeobj</p>
+<p>基于模型的方法：z，b，vdm，object-z</p>
+<hr>
+<h2 id="敏捷开发模式"><a href="#敏捷开发模式" class="headerlink" title="敏捷开发模式"></a>敏捷开发模式</h2><ol>
+<li><p><strong>TDD(Test Driven Development) 测试驱动开发</strong></p>
+<p>TDD的原理是在开发功能代码之前，先编写单元测试用例代码，测试代码确定需要编写什么产品代码。</p>
+</li>
+<li><p><strong>BDD(Behavior Driven Development) 行为驱动开发</strong></p>
+<p>行为驱动开发是一种敏捷软件开发的技术，它鼓励软件项目中的开发者、QA和非技术人员或商业参与者之间的协作。主要是从用户的需求出发，强调系统行为。</p>
+</li>
+<li><p><strong>ATDD(Acceptance Test Driven Development)  验收测试驱动开发</strong></p>
+<p>在准备实施一个功能或特性之前，团队首先需要定义出期望的质量标准和验收细则，以明确且达成共识的验收测试计划（包含一系列测试场景）来驱动开发人员的功能开发实现和测试人员的测试脚本开发。</p>
+</li>
+<li><p><strong>DDD(Domain Driven Design) 领域驱动开发</strong></p>
+<p>领域驱动设计是对面向对象的的分析和设计（OOAD，Object Orient Analysis Design）的一个补充，对技术框架进行了分层规划，同时对每个类进行了策略和类型划分。</p>
+</li>
+<li><p><strong>FDD(Feature Driven Development) 特征驱动开发</strong></p>
+<p>它强调特性驱动，快速迭代，即能保证快速开发，又能保证适当文档和质量，非常适合中小型团队开发管理。它提出的每个功能开发时间不超过两周，为每个用例限定了粒度，具有良好可执行性，也可以对项目的开发进程进行精确及时地监控。</p>
+</li>
+</ol>
+<h2 id="用户故事"><a href="#用户故事" class="headerlink" title="用户故事"></a>用户故事</h2><ol>
+<li><p>用户故事是描述对用户有价值的功能，好的用户故事应该包括<strong>角色、功能和商业价值</strong>三个要素。用户故事通常的格式为：**作为一个&lt;角色&gt;, 我想要&lt;功能&gt;, 以便于&lt;商业价值&gt;**。</p>
+</li>
+<li><p>一个好的用户故事包括三个要素：</p>
+<p>​    角色：谁要使用这个功能。</p>
+<p>​    功能：需要完成什么样的功能。</p>
+<p>​    商业价值：为什么需要这个功能，这个功能带来什么样的价值。</p>
+</li>
+</ol>
+<h2 id="Scrum迭代式增量软件开发过程、XP极限编程"><a href="#Scrum迭代式增量软件开发过程、XP极限编程" class="headerlink" title="Scrum迭代式增量软件开发过程、XP极限编程"></a>Scrum迭代式增量软件开发过程、XP极限编程</h2><ol>
+<li><p><strong>Scrum偏重于过程，XP则偏重于实践</strong></p>
+</li>
+<li><p>Scrum开发流程的<strong>三大角色</strong></p>
+<p>**产品负责人(Product Owner)**：主要负责确定产品的功能和达到要求的标准，指定软件的发布日期和交付的内容，同时有权力接受或拒绝开发团队的工作成果。</p>
+<p>**流程管理员(Scrum Master)**：主要负责整个Scrum流程在项目中的顺利实施和进行，以及清除挡在客户和开发工作之间的沟通障碍，使得客户可以直接驱动开发。</p>
+<p>**开发团队(Scrum Team)**：主要负责软件产品在Scrum规定流程下进行开发工作，人数控制在5~10人左右，每个成员可能负责不同的技术方面，但要求每成员必须要有很强的自我管理能力，同时具有一定的表达能力；成员可以采用任何工作方式，只要能达到Sprint的目标。</p>
+<p><img src="https://images.cnblogs.com/cnblogs_com/taven/201010/ScrumModel.jpg" alt="ScrumModel.jpg (925Ã542)"></p>
+</li>
+<li><p><strong>Scrum开发模型</strong></p>
+<p>产品需求列表 Product Backlog：由Product Owner负责，提供用户故事</p>
+<p>迭代 Sprint：一次Sprint Backlog完成，表示一次Sprint完成</p>
+<p>迭代计划会议 Sprint Planning Meeting：形成Sprint Backlog</p>
+<p>迭代任务列表 Sprint Backlog：由Scrum Team完成</p>
+<p>每日站立会议 Daily Scrum Meeting</p>
+<p>迭代燃尽图 Sprint Burn Down</p>
+<p>迭代演示会议 Sprint Review Meeting：Sprint完成后的评审会议，演示软件产品</p>
+<p>迭代回顾会议 Sprint Retrospective Meeting：总结会议，总结讨论需要改进的地方，放入下一轮Sprint的产品需求中</p>
+</li>
+<li><p><strong>XP极限编程 eXtreme Programming</strong></p>
+<p>它强调程序设计团队与业务专家之间的紧密协作、面对面的沟通（比书面的文档更有效）、频繁交付新的软件版本、紧凑而自我组织型的团队、能够很好的适应需求变化的代码编写和团队组织方法，更注重软件开发中人的作用。</p>
+<p>XP中包含的概念：持续集成CI(Continuous Integration)、结对编程</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">CSU-RoyCheng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://csu-roychengc.github.io/2019/02/19/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/">https://csu-roychengc.github.io/2019/02/19/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%BD%AF%E4%BB%B6%E6%9E%84%E9%80%A0/">软件构造</a><a class="post-meta__tags" href="/tags/%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/">复习提纲</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/03/24/leetcode-23-Merge-K-Sorted-Lists/"><img class="prev-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">leetcode-23 Merge K Sorted Lists</div></div></a></div><div class="next-post pull-right"><a href="/2019/02/18/%E8%BD%AF%E4%BB%B6%E8%AE%BE%E8%AE%A1%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">软件设计与体系结构复习提纲</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2019/02/18/%E8%BD%AF%E4%BB%B6%E8%AE%BE%E8%AE%A1%E4%B8%8E%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%A4%8D%E4%B9%A0%E6%8F%90%E7%BA%B2/" title="软件设计与体系结构复习提纲"><img class="cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-02-18</div><div class="title">软件设计与体系结构复习提纲</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CSU-RoyCheng</div><div class="author-info__description">但知行好事，莫要问前程</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">33</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">14</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/csu-roycheng"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-1"><span class="toc-number">1.</span> <span class="toc-text">Part 1</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-2"><span class="toc-number">2.</span> <span class="toc-text">Part 2</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-3"><span class="toc-number">3.</span> <span class="toc-text">Part 3</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-4"><span class="toc-number">4.</span> <span class="toc-text">Part 4</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-5"><span class="toc-number">5.</span> <span class="toc-text">Part 5</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-6"><span class="toc-number">6.</span> <span class="toc-text">Part 6</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Part-7"><span class="toc-number">7.</span> <span class="toc-text">Part 7</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91%E6%A8%A1%E5%BC%8F"><span class="toc-number">7.1.</span> <span class="toc-text">敏捷开发模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%95%85%E4%BA%8B"><span class="toc-number">7.2.</span> <span class="toc-text">用户故事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scrum%E8%BF%AD%E4%BB%A3%E5%BC%8F%E5%A2%9E%E9%87%8F%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E8%BF%87%E7%A8%8B%E3%80%81XP%E6%9E%81%E9%99%90%E7%BC%96%E7%A8%8B"><span class="toc-number">7.3.</span> <span class="toc-text">Scrum迭代式增量软件开发过程、XP极限编程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/10/22/%E7%94%A8dfs%E5%92%8Cbfs%E8%A7%A3%E5%86%B3%E8%BF%B7%E5%AE%AB%E9%97%AE%E9%A2%98/" title="用dfs和bfs解决迷宫问题">用dfs和bfs解决迷宫问题</a><time datetime="2019-10-22T13:38:46.000Z" title="Created 2019-10-22 21:38:46">2019-10-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/04/22/Java%E7%AC%94%E8%AE%B0-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%B5%85%E8%B0%88/" title="Java笔记: 设计模式浅谈">Java笔记: 设计模式浅谈</a><time datetime="2019-04-22T15:08:25.000Z" title="Created 2019-04-22 23:08:25">2019-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/04/21/leetcode-48-Rotate-Image/" title="leetcode 48 Rotate Image">leetcode 48 Rotate Image</a><time datetime="2019-04-21T15:44:15.000Z" title="Created 2019-04-21 23:44:15">2019-04-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/04/21/leetcode-49-Group-Anagrams/" title="leetcode 49 Group Anagrams">leetcode 49 Group Anagrams</a><time datetime="2019-04-21T15:10:58.000Z" title="Created 2019-04-21 23:10:58">2019-04-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/04/21/Java%E7%AC%94%E8%AE%B0-%E6%8E%A5%E5%8F%A3%E5%92%8C%E6%8A%BD%E8%B1%A1%E7%B1%BB%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB/" title="Java笔记: 接口和抽象类有什么区别">Java笔记: 接口和抽象类有什么区别</a><time datetime="2019-04-21T14:12:15.000Z" title="Created 2019-04-21 22:12:15">2019-04-21</time></div></div></div></div></div></div></main><footer id="footer" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347)"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By CSU-RoyCheng</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
