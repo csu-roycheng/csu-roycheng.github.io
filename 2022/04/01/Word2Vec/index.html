@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Word2Vec | RoyCheng's Blog</title><meta name="keywords" content="word2vec,skipgram,cbow"><meta name="author" content="CSU-RoyCheng"><meta name="copyright" content="CSU-RoyCheng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="自然语言处理问题中，一般以词作为基本单元，例如我们想要分析 “我去过华盛顿州” 这句话的情感，一般的做法是先将这句话进行分词，变成我，去过，华盛顿州，由于神经网络无法处理词，所以我们需要将这些词通过某些办法映射成词向量。词向量是用来表示词的向量，也可被认为是词的特征向量。把词映射为实数域向量的技术也叫词嵌入（word embedding）。 为什么不采用 one-hot 向量？假设词典中不同词的数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Word2Vec">
+<meta property="og:url" content="https://csu-roycheng.github.io/2022/04/01/Word2Vec/index.html">
+<meta property="og:site_name" content="RoyCheng&#39;s Blog">
+<meta property="og:description" content="自然语言处理问题中，一般以词作为基本单元，例如我们想要分析 “我去过华盛顿州” 这句话的情感，一般的做法是先将这句话进行分词，变成我，去过，华盛顿州，由于神经网络无法处理词，所以我们需要将这些词通过某些办法映射成词向量。词向量是用来表示词的向量，也可被认为是词的特征向量。把词映射为实数域向量的技术也叫词嵌入（word embedding）。 为什么不采用 one-hot 向量？假设词典中不同词的数">
+<meta property="og:locale">
+<meta property="og:image" content="https://csu-roycheng.github.io/img/1.png">
+<meta property="article:published_time" content="2022-04-01T02:37:48.000Z">
+<meta property="article:modified_time" content="2022-04-01T08:52:16.994Z">
+<meta property="article:author" content="CSU-RoyCheng">
+<meta property="article:tag" content="word2vec">
+<meta property="article:tag" content="skipgram">
+<meta property="article:tag" content="cbow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://csu-roycheng.github.io/img/1.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://csu-roycheng.github.io/2022/04/01/Word2Vec/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Word2Vec',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-04-01 16:52:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">54</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/1.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">RoyCheng's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Word2Vec</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-04-01T02:37:48.000Z" title="Created 2022-04-01 10:37:48">2022-04-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-04-01T08:52:16.994Z" title="Updated 2022-04-01 16:52:16">2022-04-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">机器学习与深度学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Word2Vec"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>自然语言处理问题中，一般以词作为基本单元，例如我们想要分析 “我去过华盛顿州” 这句话的情感，一般的做法是先将这句话进行分词，变成<code>我</code>，<code>去过</code>，<code>华盛顿州</code>，由于神经网络无法处理词，所以我们需要将这些词通过某些办法映射成词向量。词向量是用来表示词的向量，也可被认为是词的特征向量。把词映射为实数域向量的技术也叫词嵌入（word embedding）。</p>
+<h1 id="为什么不采用-one-hot-向量？"><a href="#为什么不采用-one-hot-向量？" class="headerlink" title="为什么不采用 one-hot 向量？"></a>为什么不采用 one-hot 向量？</h1><p>假设词典中不同词的数量为 N，每个词可以和从 0 到 N−1 的连续整数一一对应。假设一个词的相应整数表示为 i，为了得到该词的 one-hot 向量表示，我们创建一个全 0 的长为 N 的向量，并将其第 i 为设位 1。</p>
+<p>然而，使用 one-hot 词向量并不是一个好选择。一个主要的原因是，<strong>one-hot 词向量无法表达不同词之间的相似度，例如，任何一对词的 one-hot 向量的余弦相似度都为 0</strong>。</p>
+<blockquote>
+<p>a = [1, 0, 0]<br>b = [0, 1, 0]<br>c = [0, 0, 1]<br>$cos(a, b) = \frac{a^Tb}{|a||b|}=0$</p>
+</blockquote>
+<h1 id="Word2Vec"><a href="#Word2Vec" class="headerlink" title="Word2Vec"></a>Word2Vec</h1><p>2013 年，Google 团队发表了 word2vec 工具。word2vec 工具主要包含两个模型：<strong>skip-gram</strong>和<strong>连续词模型（continuous bag of words，简称 CBOW）</strong>，以及两种高效训练的方法：<strong>负采样（negative sampling）</strong>和<strong>层序 softmax（hierarchical softmax）</strong>。</p>
+<h2 id="skip-gram"><a href="#skip-gram" class="headerlink" title="skip-gram"></a>skip-gram</h2><p>在 skip-gram 模型中，我们用一个词来预测它在文本序列周围的词。例如，给定文本序列 <code>&quot;the&quot;,&quot;man&quot;,&quot;hit&quot;,&quot;his&quot;,&quot;son&quot;</code>。设背景窗口大小为 2，skip-gram 所关心的是，给定 <code>&quot;hit&quot;</code>，生成它邻近词 <code>&quot;the&quot;,&quot;man&quot;.&quot;his&quot;,&quot;son&quot;</code> 的概率（在这个例子中，”hit” 叫<strong>中心词</strong>，”the”,”man”,”his”,”son” 叫<strong>背景词</strong>），即：$P(the,man,his,son|hit)$。</p>
+<p>假设在给定中心词的情况下，<strong>背景词的生成是相互独立的</strong>，那么上式可以改写成：</p>
+<p>$$P(the|hit)·P(man|hit)·P(his|hit)·P(son|hit)$$</p>
+<p>假设词典大小为 $|V|$，我们将词典中的每个词与 0 到 $|V|−1$ 的整数一一对应：词典索引集 $V={0,1,…,|V|−1}$。一个词在该词典中所对应的整数称为词的索引，给定一个长度为 T 的文本序列，t 时刻的中心词为 $w(t)$。当时间窗口大小为 m 时，skip-gram 需要最大化<strong>给定任一中心词生成背景词的概率</strong>：</p>
+<p>$$\prod_{t=1}^T {\prod_{-m≤j≤m,\ j\neq 0}{P(w^{(t+j)}|w^{(t)})}}$$</p>
+<p>上式得最大似然估计与<strong>最小化以下对数似然损失函数</strong>等价：</p>
+<p>$$-\frac{1}{T}\sum_{t=1}^{T}\sum_{-m≤j≤m,\ j\neq 0}\log P(w^{(t+j)}|w^{(t)})$$</p>
+<p>我们可以用 v 代表中心词的词向量，u 代表背景词的词向量。换言之，对于词典中一个索引为 i 的词，它本身有两个向量 $v_i$ 和 $u_i$ 进行表示，在计算的过程中，<strong>根据其所处的角色不同，选择不同的词向量。词典中所有词的这两种向量正是跳字模型所需要学习的参数</strong>。</p>
+<p>为了将模型参数植入损失函数，我们需要使用模型参数表达损失函数中的<strong>中心词生成背景词的概率</strong>。假设中心词的概率是相互独立的。给定中心词 $w_c$ 在词典中的索引为 c，背景词 $w_o$ 在词典中的索引为 o，损失函数中中心词生成背景词的概率可以使用 softmax 函数进行定义：</p>
+<p>$$P(w_o|w_c)=\frac{\exp(u_o^Tv_c)}{\sum_{i\in V}\exp(u_i^Tv_c)}$$</p>
+<p>当序列长度 T 较大时，我们通常<strong>随机采样</strong>一个<strong>较小的子序列</strong>来计算损失函数并使用 <strong>SGD 优化该损失函数</strong>。通过求导，我们可以计算出上式生成概率的对数关于中心词向量 $v_c$ 的梯度为：</p>
+<p>$$\begin{aligned} \frac{\partial \log P(w_o|w_c)}{\partial v_c}=\frac{\partial}{\partial v_c}\log\frac{\exp(u_o^Tv_c)}{\sum_{i=1}^{|V|}\exp(u_i^Tv_c)}=\frac{\partial}{\partial v_c} \log \exp(u_o^Tv_c)-\frac{\partial}{\partial v_c}\log \sum_{i=1}^{|V|}\exp(u_i^T{v_c}) \end{aligned}$$</p>
+<p>上式推导后如下：</p>
+<p>$$\frac{\partial \log P(w_o|w_c)}{\partial v_c}=u_o-\sum_{j\in V}P(w_j|w_c)u_j$$</p>
+<p>通过上面计算得到梯度后，我们可以使用随机梯度下降来不断迭代模型参数 $v_c$。其它模型参数 $u_o$ 的迭代方式同理可得。最终，对于词典中任一索引为 i 的词，我们均得到该词作为中心词和背景词的两组词向量 $v_i$ 和 $u_i$。</p>
+<h2 id="CBOW"><a href="#CBOW" class="headerlink" title="CBOW"></a>CBOW</h2><p>与 skip-gram 最大的不同是，CBOW 是<strong>用一个中心词在文本序列周围的词来预测中心词</strong>。例如，给定文本 <code>&quot;the&quot;,&quot;man&quot;,&quot;hit&quot;,&quot;his&quot;,&quot;son&quot;</code>，连续词袋模型所关心的是，邻近词 <code>&quot;the&quot;,&quot;man&quot;,&quot;his&quot;,&quot;son&quot;</code> 一起生成中心词 <code>&quot;hit&quot;</code> 的概率。</p>
+<p>连续词袋模型需要<strong>最大化由背景词生成任一中心词的概率</strong>：</p>
+<p>$$\prod_{t=1}^TP(w^{(t)}|w^{(t-m)},…,w^{(t-1)},w^{(t+1)},…,w^{(t+m)})$$</p>
+<p>上式最大似然估计与<strong>最小化以下对数似然损失函数</strong>等价：</p>
+<p>$$-\sum_{t=1}^T\log P(w^{(t)}|w^{(t-m)},…,w^{(t-1)},w^{(t+1)},…,w^{(t+m)})$$</p>
+<p>我们可以用 v 和 u 分别代表背景词和中心词的向量。给定中心词 $w_c$ 在词典中的索引为 c，背景词 $w_{o_1},…,w_{o_{2m}}$ 在词典中的索引为 $o_1,…,o_{2m}$，损失函数中的背景词生成中心词的概率可以使用 softmax 函数定义为：</p>
+<p>$$P(w_c|w_{o_1},…,w_{o_{2m}})=\frac{\exp[u_c^T(v_{o_1}+…+v_{o_{2m}})/(2m)]}{\sum_{j\in V}\exp[u_j^T(v_{o_1}+…+v_{o_{2m}})/(2m)]}$$</p>
+<p>同样，当序列长度 T 较大时，我们通常<strong>随机采样一个较小的子序列</strong>来计算损失函数，并使用<strong>随机梯度下降</strong>优化该损失函数，通过微分，我们可以计算出上式生成概率的对数关于任一背景词向量 $v_{o_i}(i=1,…,2m)$ 的梯度为：</p>
+<p>$$\frac{\partial \log P(w_c|w_{o_1},…,w_{o_{2m}})}{\partial v_{o_i}}=\frac{1}{2m}(u_c-\sum_{j\in V}\frac{\exp(u_j^Tv_c)}{\sum_{i\in V}\exp(u_i^Tv_c)}u_j)$$</p>
+<p>而上式与下式等价：</p>
+<p>$$\frac{\partial \log P(w_c|w_{o_1},…,w_{o_{2m}})}{\partial v_{o_i}}=\frac{1}{2m}(u_c-\sum_{j\in V}P(w_j|w_c)u_j)$$</p>
+<h1 id="优化方法"><a href="#优化方法" class="headerlink" title="优化方法"></a>优化方法</h1><p>可以看到，无论是 skip-gram 还是 CBOW，<strong>每一步梯度计算的开销与词典 V 的大小呈正相关</strong>。显然，当词典较大时，这种训练方法的计算开销会很大。所以使用上述训练方法在实际中是有难度的。我们可以使用近似的方法来计算这些梯度，从而减小计算开销。常用的近似训练法包括<strong>负采样</strong>和<strong>层序 softmax</strong>。</p>
+<h2 id="负采样"><a href="#负采样" class="headerlink" title="负采样"></a>负采样</h2><p>以 skip-gram 来说明。词典 V 的大小之所以会在目标函数中出现，<strong>是因为中心词 $w_c$ 生成背景词 $w_o$ 的概率 $P(w_o|w_c)$ 使用了 softmax</strong>，而 softmax 考虑到了背景词可能是词典中任一词，并体现在了 softmax 的分母上。</p>
+<p>我们不妨换个角度，假设中心词 $w_c$ 生成背景词 $w_o$ 由<strong>以下两个互相独立的联合事件</strong>组成来近似：</p>
+<ol>
+<li>中心词 $w_c$ 和背景词 $w_o$ 同时出现在该训练数据窗口</li>
+<li>中心词 $w_c$ 和噪声词不同时出现在该训练数据窗口<ul>
+<li>中心词 $w_c$ 和第 1 个噪声词 $w_1$ 不同时出现在训练数据窗口（<strong>噪声词 $w_1$ 按噪声词分布 P(w) 随机生成</strong>）</li>
+<li>…</li>
+<li>中心词 $w_c$ 和第 K 个噪声词 $w_k$ 不同时出现在训练数据窗口（噪声词 $w_k$ 按噪声词分布 P(w) 随机生成）</li>
+</ul>
+</li>
+</ol>
+<p>在一个文本序列中，设 $P(D=1|w_o,w_c)$ 为中心词 $w_c$ 和背景词 $w_o$ <strong>在当前窗口中同时出现的概率</strong>，$P(D=1|w_o,w_c)$ 为中心词 $w_c$ 和背景词 $w_o$ <strong>没在当前窗口中出现的概率</strong>。则这些事件的联合分布概率为：</p>
+<p>$$P(D=1|w_o,w_c)\prod_{k=1,w_k\sim P(w)}^KP(D=0|w_k,w_c)$$</p>
+<p>$$P(D=1|w_o,w_c)=1-P(D=0|w_o,w_c)$$</p>
+<p>联合上述两式，取对数可得：</p>
+<p>$$\log P(w_o|w_c)=\log {P(D=1|w_o,w_c)\prod_{k=1,w_k\sim P(w)}^KP(D=0|w_k,w_c)}$$</p>
+<p>预测两个词有没有在同一窗口出现，结果只有两种，同时出现，没有同时出现。我们可以<strong>使用 sigmoid 函数来预测两个词同时出现的概率</strong>。$u_o$ 表示输出的背景词的词向量表示，$u_c$ 表示输入的中心词的词向量表示：</p>
+<p>$$P(w_o|w_c)=P(D=1|w_o,w_c)=\sigma(u_o^T,v_c)=\frac{1}{1+exp(-u_o^Tu_c)}$$</p>
+<p>假设噪声词 $w_k$ 在词典中的索引为 $i_k$，上式可改写为：</p>
+<p>$$\log P(w_o|w_c)=\log\frac{1}{1+\exp(-u_o^Tv_c)}+\sum_{k=1,w_k\sim P(w)}^K\log{1-\frac{1}{1+\exp(-u_{i_k}^Tv_c)}}$$</p>
+<p>因此，有关中心词 $w_c$ 生成背景词 $w_o$ 的损失函数是：</p>
+<p>$$-\log P(w_o|w_c)=-\log\frac{1}{1+\exp(-u_o^Tv_c)}-\sum_{k=1,w_k\sim P(w)}^K\log\frac{1}{1+\exp(u_{i_k}^Tv_c)}$$</p>
+<p>现在，<strong>训练中每一步的梯度计算开销不再与词典大小相关，而与 K 线性相关</strong>。当 K 取较小的常数时，负采样的每一步梯度计算开销也较小。</p>
+<h2 id="层序-softmax"><a href="#层序-softmax" class="headerlink" title="层序 softmax"></a>层序 softmax</h2><p>层序 softmax 利用了二叉树。树的每个叶子节点代表着词典 V 中的每个词。每个词 $w_i$ 对应的词向量为 $v_i$。我们以下图为例，来描述层序 softmax 的工作机制。</p>
+<img src="https://s2.loli.net/2022/04/01/xdJBspE5nD1hua8.png" alt="img" style="zoom:80%;" />
+
+<p>设 $L(w)$ 为从二叉树根节点到代表词 w 的叶子节点的路径上的节点数，并设 $n(w,i)$ 为该路径上第 i 个节点，该节点的向量为 $u_{n(w,j)}$。以上图为例，$L(w_3)=4$。那么，skip-gram 和 CBOW 所需要计算的任意词 $w_i$ 生成词 w 的概率为：</p>
+<p>$$P(w|w_i)=\prod_{j=1}^{L(w)-1}\sigma([n(w,j+1)=left_child(n(w,j))]·u_{n(w,j)}^Tv_i)$$</p>
+<p>其中，如果 x 为真，$[x]=1$；反之 $[x]=−1$。</p>
+<p>由于 $σ(x)+σ(−x)=1$，$w_i$ 生成词典中任何词的概率之和为 1：$\sum_{w=1}^VP(w|w_i)=1$。</p>
+<p>下面举个具体的<strong>例子</strong>，计算 $w_i$ 生成 $w_3$ 的概率，由于在二叉树中由根到 $w_3$ 的路径需要向左、向右、再向左遍历，所以得到：</p>
+<p>$$P(w_3|w_i)=\sigma(u_{n(w_3,1)}^Tv_i)·\sigma(-u_{n(w_3,2)}^Tv_i)·\sigma(u_{n(w_3,3)}^Tv_i)$$</p>
+<p>由此，我们就可以使用<strong>随机梯度下降</strong>在 skip-gram 和 CBOW 中不断迭代计算词典中所有词向量 v 和非叶子节点的向量 u。<strong>每次迭代的计算开销由 $O(|V|)$ 降为二叉树的高度 $O(log⁡|V|)$。</strong></p>
+<p>最后一个问题，<strong>层序 softmax 的二叉树是如何建立的？</strong></p>
+<p>这里的树为 <strong>Huffman 树</strong>，权重是语料库中 <strong>word 出现的频率</strong>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">CSU-RoyCheng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://csu-roycheng.github.io/2022/04/01/Word2Vec/">https://csu-roycheng.github.io/2022/04/01/Word2Vec/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/word2vec/">word2vec</a><a class="post-meta__tags" href="/tags/skipgram/">skipgram</a><a class="post-meta__tags" href="/tags/cbow/">cbow</a></div><div class="post_share"><div class="social-share" data-image="/img/1.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/03/20/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91CocoQa%20Question%20Answering%20for%20Coding%20Conventions%20over%20Knowledge%20Graphs/"><img class="next-cover" src="/img/1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">【论文解读】CocoQa Question Answering for Coding Conventions over Knowledge Graphs</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CSU-RoyCheng</div><div class="author-info__description">但知行好事，莫要问前程</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">71</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">54</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/csu-roycheng"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E9%87%87%E7%94%A8-one-hot-%E5%90%91%E9%87%8F%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">为什么不采用 one-hot 向量？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Word2Vec"><span class="toc-number">2.</span> <span class="toc-text">Word2Vec</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#skip-gram"><span class="toc-number">2.1.</span> <span class="toc-text">skip-gram</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CBOW"><span class="toc-number">2.2.</span> <span class="toc-text">CBOW</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">优化方法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%9F%E9%87%87%E6%A0%B7"><span class="toc-number">3.1.</span> <span class="toc-text">负采样</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%82%E5%BA%8F-softmax"><span class="toc-number">3.2.</span> <span class="toc-text">层序 softmax</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/01/Word2Vec/" title="Word2Vec">Word2Vec</a><time datetime="2022-04-01T02:37:48.000Z" title="Created 2022-04-01 10:37:48">2022-04-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/20/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91CocoQa%20Question%20Answering%20for%20Coding%20Conventions%20over%20Knowledge%20Graphs/" title="【论文解读】CocoQa Question Answering for Coding Conventions over Knowledge Graphs">【论文解读】CocoQa Question Answering for Coding Conventions over Knowledge Graphs</a><time datetime="2022-03-20T08:31:19.000Z" title="Created 2022-03-20 16:31:19">2022-03-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/18/360NLP%E5%AE%9E%E4%B9%A0%E7%94%9F%E9%9D%A2%E7%BB%8F/" title="360NLP实习生面经">360NLP实习生面经</a><time datetime="2022-03-18T06:34:01.000Z" title="Created 2022-03-18 14:34:01">2022-03-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/15/%E7%AE%97%E6%B3%95%E9%9D%A2%E8%AF%95%E5%85%AB%E8%82%A1%E6%96%87/" title="算法面试八股文">算法面试八股文</a><time datetime="2022-03-15T11:29:47.000Z" title="Created 2022-03-15 19:29:47">2022-03-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/12/Dropout/" title="Dropout">Dropout</a><time datetime="2022-03-12T01:56:13.000Z" title="Created 2022-03-12 09:56:13">2022-03-12</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/2.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By CSU-RoyCheng</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
