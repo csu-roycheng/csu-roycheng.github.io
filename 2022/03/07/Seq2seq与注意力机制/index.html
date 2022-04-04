@@ -1,0 +1,252 @@
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seq2seq与注意力机制 | RoyCheng's Blog</title><meta name="keywords" content="seq2seq,attention"><meta name="author" content="CSU-RoyCheng"><meta name="copyright" content="CSU-RoyCheng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Seq2seq在基于词语的语言模型中，我们使用了循环神经网络。它的输入是一段不定长的序列，输出却是定长的，例如输入：They are，输出可能是 watching 或者 sleeping。然而，很多问题的输出是不定长的序列。以机器翻译为例，输入是一段英文，输出是一段法语，输入和输出皆不定长，例如  英语：The are watching 法语：lls regardent  当输入输出序列都是不定长">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Seq2seq与注意力机制">
+<meta property="og:url" content="https://csu-roycheng.github.io/2022/03/07/Seq2seq%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/index.html">
+<meta property="og:site_name" content="RoyCheng&#39;s Blog">
+<meta property="og:description" content="Seq2seq在基于词语的语言模型中，我们使用了循环神经网络。它的输入是一段不定长的序列，输出却是定长的，例如输入：They are，输出可能是 watching 或者 sleeping。然而，很多问题的输出是不定长的序列。以机器翻译为例，输入是一段英文，输出是一段法语，输入和输出皆不定长，例如  英语：The are watching 法语：lls regardent  当输入输出序列都是不定长">
+<meta property="og:locale">
+<meta property="og:image" content="https://csu-roycheng.github.io/img/2.png">
+<meta property="article:published_time" content="2022-03-07T01:47:07.000Z">
+<meta property="article:modified_time" content="2022-03-08T09:04:16.649Z">
+<meta property="article:author" content="CSU-RoyCheng">
+<meta property="article:tag" content="seq2seq">
+<meta property="article:tag" content="attention">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://csu-roycheng.github.io/img/2.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://csu-roycheng.github.io/2022/03/07/Seq2seq%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Seq2seq与注意力机制',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-03-08 17:04:16'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">73</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">57</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/2.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">RoyCheng's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Seq2seq与注意力机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-03-07T01:47:07.000Z" title="Created 2022-03-07 09:47:07">2022-03-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-03-08T09:04:16.649Z" title="Updated 2022-03-08 17:04:16">2022-03-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">机器学习与深度学习</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Seq2seq与注意力机制"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Seq2seq"><a href="#Seq2seq" class="headerlink" title="Seq2seq"></a>Seq2seq</h1><p>在基于词语的语言模型中，我们使用了循环神经网络。它的输入是一段不定长的序列，输出却是定长的，例如输入：They are，输出可能是 watching 或者 sleeping。然而，很多问题的输出是不定长的序列。以机器翻译为例，输入是一段英文，输出是一段法语，<strong>输入和输出皆不定长</strong>，例如</p>
+<blockquote>
+<p>英语：The are watching</p>
+<p>法语：lls regardent</p>
+</blockquote>
+<p>当输入输出序列都是不定长时，我们可以使用编码器 - 解码器（encoder-decoder）或者 seq2seq。</p>
+<h2 id="Encoder-Decoder"><a href="#Encoder-Decoder" class="headerlink" title="Encoder-Decoder"></a>Encoder-Decoder</h2><p>编码器和解码器分别对应输入序列和输出序列的<strong>两个循环神经网络</strong>。我们通常会在输入序列和输出序列后面分别附上一个特殊字符 <code>&lt;eos&gt;</code>（end of sequence）表示序列的终止。在测试模型时，一旦输出 <code>&lt;eos&gt;</code> 就终止当前的输出序列。</p>
+<h3 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h3><p>编码器的作用是把一个不定长的输入序列转化成一个定长的背景词向量 c。该背景词向量包含了输入序列的信息。常用的编码器是循环神经网络。</p>
+<p>假设循环神经网络单元为 $f$，在 $t$ 时刻的输入为 $x_t,t=1,…,T$。假设 $x_t$ 是单个输出在嵌入层的结果，例如 $x_t$ 对应的 ont-hot 向量 $o\in\mathbb R^x$ 与嵌入层参数矩阵 $E\in\mathbb R^{x×h}$ 的乘积 $o^TE$。隐藏层变量 $h_t=f(x_t,h_{t−1})$，编码器的背景向量 $c=q(h_1,…,h_T)$。</p>
+<p>一个简单的背景向量可以认为是该网络最终时刻的隐藏层变量 $h_T$。</p>
+<h3 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h3><p>编码器最终输出了一个背景向量 $c$，该背景向量整合了输入序列 $x_1,x_2,…,x_T$。</p>
+<p>假设训练数据中的输出序列是 $y_1,y_2,…,y_{T′}$，我们希望表示每个 $t′$ 时刻输出的向量，<strong>既取决于之前的输出又取决于背景向量</strong>。因此，我们可以最大化输出序列的联合概率：$P(y_1,y_2,…,y_{T’})=\prod_{t’=1}^{T’}P(y_{t’}\mid y_1,…,y_{t’-1},c)$。</p>
+<p>并得到该输出序列的损失函数：$-\log P(y_1,…,y_{T’})$。</p>
+<p>为此，我们使用另一个循环神经网络作为解码器。解码器使用函数 p 来表示单个输出 $y_{t′}$ 的概率：$P(y_{t’}\mid y_1,…,y_{t’-1},c)=p(y_{t’-1},s_{t’},c)$。</p>
+<p>其中的 $s_{t′}$ 为 $t′$ 时刻的解码器的隐藏层变量。该隐藏层变量 $s_{t’}=g(y_{t’-1},c,s_{t’-1})$。其中函数 g 是循环神经网络单元。</p>
+<p>需要注意的是，编码器和解码器通常会使用<strong>多层循环神经网络</strong>。</p>
+<h1 id="注意力机制"><a href="#注意力机制" class="headerlink" title="注意力机制"></a>注意力机制</h1><p>在以上的解码器设计中，各个时刻使用了相同的背景向量 c。如果解码器的不同时刻可以使用不同的背景向量呢？</p>
+<p>以英语 - 法语翻译为例，给定一对输入序列 “They are watching” 和输出序列 “lls regardent”，解码器在时刻 1 可以使用更多的编码了 “They are” 信息的背景向量来生成 “lls”，而在时刻 2 可以使用更多编码了 “watching” 信息的背景向量来生成 “regardent”。这看上去就像是在解码器的每一时刻对输入序列中不同时刻分配不同的注意力。</p>
+<p>现在，对上面的解码器稍作修改。我们假设时刻 $t′$ 的背景向量为 $c_{t′}$。那么<strong>解码器</strong>在时刻 $t′$ 的<strong>隐藏层变量</strong> $s_{t’}=g(y_{t’-1},c_{t’},s_{t’-1})$。</p>
+<p>令<strong>编码器</strong>在 t 时刻的隐藏层变量为 $h_t$，解码器在 $t′$ 时刻的<strong>背景向量</strong>为 $c_{t’}=\sum_{t=1}^{T}\alpha_{t’t}h_t$。</p>
+<p>也就是说，给定解码器的当前时刻 $t′$，我们需要<strong>对编码器中不同时刻的隐藏层变量求<u>加权平均</u><strong>。而权值也称注意力权值。它的</strong>计算公式</strong>是：$\alpha_{t’ t} = \frac{\exp(e_{t’ t})}{ \sum_{k=1}^T \exp(e_{t’ k}) }$。</p>
+<p>而 $e_{t′t}∈\mathbb R$ 的计算公式为：$e_{t’ t} = a(s_{t’ - 1},h_t)$。</p>
+<p>其中函数 a 有多种设计方法。在 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1409.0473">Bahdanau 的论文</a>中，$e_{t’t} = v^Ttanh(W_s s_{t’-1}+W_h h_t)$。</p>
+<p>其中 $v$、$W_s$、$W_h$ 和编码器与解码器两个循环神经网络中的各个权重与偏移项以及嵌入层参数等都是需要同时学习的模型参数。</p>
+<h2 id="详细解释"><a href="#详细解释" class="headerlink" title="详细解释"></a>详细解释</h2><p>下图是一个 Encoder 架构，$s_0$ 从值上来说与 $h_m$ 是相等的，只不过这里换了个名字。</p>
+<p><img src="https://s2.loli.net/2022/03/08/bo7p4FlhtLMOqWy.png" alt="img"></p>
+<p>首先我们需要将 $s_0$ 和所有的 $h_i(i=1,…,m)$ 计算一个<code>相关性</code>，比方说计算 $s_0$ 和 $h_1$ 之间的相关性计算得$\alpha_1=align(h_1,s_0)$。</p>
+<p>计算得到 m 个相关性 $\alpha_i$ 之后，将这些值与 $h_i$ 进行加权平均，即：$c_0=\sum_{i=1}^m \alpha_i h_i=\alpha_1h_1+···\alpha_mh_m$。</p>
+<p><img src="https://s2.loli.net/2022/03/08/zUG3P8JkcBnSwgL.png" alt="img"></p>
+<p>对于那些值比较大的 $\alpha_k$，最终 $c_0$ 中也会有一大部分来自于 $h_k$。$c_0$ 实际上考虑到了所有时刻的 h，只不过对于某些时刻可能关注的更多，而某些时刻关注的更少，这就是注意力机制。</p>
+<p>之后将 $s_0,c_0,x_1′$ 作为 $t=0$ 时刻 Decoder 的输入，计算得到 $s_1$，然后再计算 $s_1$ 与所有 $h_i(i=1,…,m)$ 之间新的相关性 $\alpha_i$。</p>
+<p><img src="https://s2.loli.net/2022/03/08/vCB31572PEb9hXd.png" alt="img"></p>
+<p>同样的，将新计算得到的 $\alpha_i$ 与 $h_i$ 做加权平均，得到新的 context vector $c_1$。</p>
+<img src="https://s2.loli.net/2022/03/08/mgj6CdrFEoLvhHi.png" alt="img" style="zoom:50%;" />
+
+<p>重复上述步骤，直到 Decoder 结束。</p>
+<img src="https://s2.loli.net/2022/03/08/LD36fmRWoZOetgT.png" alt="img" style="zoom: 50%;" />
+
+<h3 id="align-如何设计？"><a href="#align-如何设计？" class="headerlink" title="align() 如何设计？"></a>align() 如何设计？</h3><p>有两种方法，在最初的论文，即 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1409.0473">Bahdanau</a> 的论文中，他的设计方式如下图所示：</p>
+<p><img src="https://s2.loli.net/2022/03/08/asNbKJuEGDfXykx.png" alt="img"></p>
+<p>现在比较<strong>主流</strong>的，同时也是 Transformer 结构使用的方法如下所示：</p>
+<p><img src="https://s2.loli.net/2022/03/08/m4BRo5CdpgnwILy.png" alt="img"></p>
+<h3 id="c-i-如何运用到-Decoder-中？"><a href="#c-i-如何运用到-Decoder-中？" class="headerlink" title="$c_i$ 如何运用到 Decoder 中？"></a>$c_i$ 如何运用到 Decoder 中？</h3><img src="https://s2.loli.net/2022/03/08/oKUYkejZd92bOzA.png" alt="img" style="zoom:67%;" />
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>编码器 - 解码器（seq2seq）的输入和输出可以都是<strong>不定长序列</strong>。</li>
+<li>在解码器上应用注意力机制可以使解码器的<strong>每个时刻使用不同的背景向量</strong>。每个背景向量相当于对输入序列的不同部分分配了不同的注意力。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">CSU-RoyCheng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://csu-roycheng.github.io/2022/03/07/Seq2seq%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/">https://csu-roycheng.github.io/2022/03/07/Seq2seq%E4%B8%8E%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/seq2seq/">seq2seq</a><a class="post-meta__tags" href="/tags/attention/">attention</a></div><div class="post_share"><div class="social-share" data-image="/img/2.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/03/09/BERT%E8%AF%A6%E8%A7%A3/"><img class="prev-cover" src="/img/2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">BERT详解</div></div></a></div><div class="next-post pull-right"><a href="/2022/03/06/RNN%E4%B8%8ELSTM/"><img class="next-cover" src="/img/1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">RNN与LSTM</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2022/03/02/Transformer%E8%AF%A6%E8%A7%A3/" title="Transformer详解"><img class="cover" src="/img/1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-02</div><div class="title">Transformer详解</div></div></a></div><div><a href="/2022/03/10/Transformer%E5%92%8CSelf-Attention%E5%85%AB%E8%82%A1%E6%96%87/" title="Transformer、Self-Attention、BERT八股文"><img class="cover" src="/img/1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-10</div><div class="title">Transformer、Self-Attention、BERT八股文</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CSU-RoyCheng</div><div class="author-info__description">但知行好事，莫要问前程</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">73</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">57</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/csu-roycheng"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Seq2seq"><span class="toc-number">1.</span> <span class="toc-text">Seq2seq</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Encoder-Decoder"><span class="toc-number">1.1.</span> <span class="toc-text">Encoder-Decoder</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Encoder"><span class="toc-number">1.1.1.</span> <span class="toc-text">Encoder</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Decoder"><span class="toc-number">1.1.2.</span> <span class="toc-text">Decoder</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"><span class="toc-number">2.</span> <span class="toc-text">注意力机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A"><span class="toc-number">2.1.</span> <span class="toc-text">详细解释</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#align-%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%EF%BC%9F"><span class="toc-number">2.1.1.</span> <span class="toc-text">align() 如何设计？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c-i-%E5%A6%82%E4%BD%95%E8%BF%90%E7%94%A8%E5%88%B0-Decoder-%E4%B8%AD%EF%BC%9F"><span class="toc-number">2.1.2.</span> <span class="toc-text">$c_i$ 如何运用到 Decoder 中？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/03/ALBERT%E3%80%81RoBERTa/" title="ALBERT、RoBERTa">ALBERT、RoBERTa</a><time datetime="2022-04-03T07:05:22.000Z" title="Created 2022-04-03 15:05:22">2022-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/03/Byte-Pair-Encoding/" title="Byte Pair Encoding">Byte Pair Encoding</a><time datetime="2022-04-03T06:40:04.000Z" title="Created 2022-04-03 14:40:04">2022-04-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/01/Word2Vec/" title="Word2Vec">Word2Vec</a><time datetime="2022-04-01T02:37:48.000Z" title="Created 2022-04-01 10:37:48">2022-04-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/20/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91CocoQa%20Question%20Answering%20for%20Coding%20Conventions%20over%20Knowledge%20Graphs/" title="【论文解读】CocoQa Question Answering for Coding Conventions over Knowledge Graphs">【论文解读】CocoQa Question Answering for Coding Conventions over Knowledge Graphs</a><time datetime="2022-03-20T08:31:19.000Z" title="Created 2022-03-20 16:31:19">2022-03-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/03/18/360NLP%E5%AE%9E%E4%B9%A0%E7%94%9F%E9%9D%A2%E7%BB%8F/" title="360NLP实习生面经">360NLP实习生面经</a><time datetime="2022-03-18T06:34:01.000Z" title="Created 2022-03-18 14:34:01">2022-03-18</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/2.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By CSU-RoyCheng</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
