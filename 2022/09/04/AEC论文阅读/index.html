@@ -1,0 +1,963 @@
+<!DOCTYPE html><html lang="zh-Hans" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AEC论文阅读 | RoyCheng's Blog</title><meta name="keywords" content="AEC"><meta name="author" content="CSU-RoyCheng"><meta name="copyright" content="CSU-RoyCheng"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="AEC Challenge 2021Amazon-Rank 1基于 PercepNet 的修改。（复现的 PercepNet https:&#x2F;&#x2F;github.com&#x2F;jzi040941&#x2F;PercepNet） 信号模型  设 $x(n)$ 为干净的语音信号。在嘈杂的房间中，免提麦克风捕捉到的信号为：$$d(n)&#x3D;x(n)h_x+v(n)+z(n)$$其中，$v(n)$ 为房间的附加噪声，$z(n)$">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AEC论文阅读">
+<meta property="og:url" content="https://csu-roycheng.github.io/2022/09/04/AEC%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/index.html">
+<meta property="og:site_name" content="RoyCheng&#39;s Blog">
+<meta property="og:description" content="AEC Challenge 2021Amazon-Rank 1基于 PercepNet 的修改。（复现的 PercepNet https:&#x2F;&#x2F;github.com&#x2F;jzi040941&#x2F;PercepNet） 信号模型  设 $x(n)$ 为干净的语音信号。在嘈杂的房间中，免提麦克风捕捉到的信号为：$$d(n)&#x3D;x(n)h_x+v(n)+z(n)$$其中，$v(n)$ 为房间的附加噪声，$z(n)$">
+<meta property="og:locale">
+<meta property="og:image" content="https://csu-roycheng.github.io/img/1.png">
+<meta property="article:published_time" content="2022-09-04T08:59:41.000Z">
+<meta property="article:modified_time" content="2022-09-04T09:12:45.041Z">
+<meta property="article:author" content="CSU-RoyCheng">
+<meta property="article:tag" content="AEC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://csu-roycheng.github.io/img/1.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://csu-roycheng.github.io/2022/09/04/AEC%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AEC论文阅读',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-09-04 17:12:45'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">77</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">58</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/1.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">RoyCheng's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">AEC论文阅读</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-09-04T08:59:41.000Z" title="Created 2022-09-04 16:59:41">2022-09-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-09-04T09:12:45.041Z" title="Updated 2022-09-04 17:12:45">2022-09-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">论文解读</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="AEC论文阅读"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="AEC-Challenge-2021"><a href="#AEC-Challenge-2021" class="headerlink" title="AEC Challenge 2021"></a>AEC Challenge 2021</h1><h2 id="Amazon-Rank-1"><a href="#Amazon-Rank-1" class="headerlink" title="Amazon-Rank 1"></a>Amazon-Rank 1</h2><p>基于 PercepNet 的修改。（复现的 PercepNet <a target="_blank" rel="noopener" href="https://github.com/jzi040941/PercepNet%EF%BC%89">https://github.com/jzi040941/PercepNet）</a></p>
+<h3 id="信号模型"><a href="#信号模型" class="headerlink" title="信号模型"></a>信号模型</h3><img src="https://s2.loli.net/2022/06/02/A3yENcIglxjoT2n.png" alt="image-20220602174447036" style="zoom:80%;" />
+
+<p>设 $x(n)$ 为干净的语音信号。在嘈杂的房间中，免提麦克风捕捉到的信号为：<br>$$<br>d(n)=x(n)<em>h_x+v(n)+z(n)<br>$$<br>其中，$v(n)$ 为房间的附加噪声，$z(n)$ 为远端信号 $f(n)$ 产生的回声，$h_x$ 是说话者对麦克风的脉冲响应，$</em>$ 表示卷积。</p>
+<p>当忽略非线性影响时，回波信号可以表示为 $z(n)=f(n)*h_f$。基于自适应滤波的回声消除包括估计 $h_f$，然后从麦克风信号中减去估计的回声 $\hat z(n)$，得到回声消除的信号 $y(n)$。然而，回声消除过程一般不完善，回声仍然存在于 $y(n)$ 中。</p>
+<p>我们提出一个联合残余回声抑制（RES）和噪声抑制（NS）算法，使得增强的输出 $\hat x(n)$ 在感知上尽可能接近理想的干净语音 $x(n)$。</p>
+<h3 id="自适应滤波器"><a href="#自适应滤波器" class="headerlink" title="自适应滤波器"></a>自适应滤波器</h3><p>图 1 中的自适应滤波器（$\hat h_f$）来自于 SpeexDSP 的 MDF 模块。通过结合学习率控制和双回声路径模型来实现双讲的鲁棒性。</p>
+<p>发送到扬声器的信号 $f(n)$ 与麦克风上出现的相应回声之间有时存在未知延迟。为了估计延迟 D，我们使用 400 ms 的滤波器运行第二个 AEC，并在估计的滤波器中找到峰值。延迟估计 AEC 对信号的下采样版本（8 kHz）进行操作，以降低复杂性。我们使用延迟的远端信号 f(n−D) 在 16 kHz 时执行最终回声消除。我们使用 10 ms 的帧大小，这与 RES 中使用的帧大小相匹配，并避免造成任何额外的延迟。</p>
+<h3 id="残余回声抑制"><a href="#残余回声抑制" class="headerlink" title="残余回声抑制"></a>残余回声抑制</h3><p>线性 AEC 输出的 $y(n)$，包含近端语音 $x(n)$、近端噪声 $v(n)$ 以及一些残余回声 $z(n)-\hat z(n)$。残余的回声包括：</p>
+<ol>
+<li>估计的滤波器 $\hat h_f$ 的偏差</li>
+<li>扬声器引起的非线性失真</li>
+<li>后期混响</li>
+</ol>
+<p>与噪声抑制问题不同，残余回波抑制涉及将语音信号与另一个语音信号隔离开来。我们使用 PercepNet 实现了 RES 和 NS 的结合，该算法基于两个主要思想：</p>
+<ol>
+<li>缩放 perceptually-spaced spectral bands 的能量以匹配近端语音的能量</li>
+<li>在基频上使用 multi-tap comb filter 来去除谐波之间的噪声并匹配近端语音的周期性</li>
+</ol>
+<p>令 $Y_b(\mathcal l)$ 为帧 $\mathcal l$ 的波段 b 中的 AEC 输出信号 $y(n)$ 的幅值，并且 $X_b(\mathcal l)$ 类似地为干净语音 $x(n)$ 定义。应用于该频带的理想增益为：<br>$$<br>g_b(\mathcal l)=\frac{X_b(\mathcal l)}{Y_b(\mathcal l)}<br>$$<br>将增益 $g_b(\mathcal l)$ 应用于频带 b 中的幅度谱会导致增强的信号具有与干净语音相同的谱包络。 虽然这对于清音段通常是足够的，但浊音段可能比干净的语音具有更高的粗糙度。 这是由于谐波之间的噪声降低了语音的感知周期性/发声。 由于音调对噪声的掩蔽作用相对较小，因此噪声特别明显。 在这种情况下，我们使用非因果梳状滤波器来去除音高谐波之间的噪声并使信号更具周期性。梳状滤波器由强度/混合参数 $r_b(\mathcal l)$ 控制，其中 $r_b(\mathcal l)=0$ 表示不发生滤波，而 $r_b(\mathcal l)=1$ 表示频带被梳状滤波版本替换，从而最大化周期性。</p>
+<img src="https://s2.loli.net/2022/06/01/NoLy8hWGnuagIfR.png" alt="image-20220601104842369" style="zoom:67%;" />
+
+<p>图 2 为 RES 算法的描述。STFT 频谱按照等效矩形带宽（ERB）尺度划分为 32 个三角形波段。DNN 使用从输入和远端语音信号计算的特征来估计要使用的增益 $\hat g_b(\mathcal l)$ 和滤波强度 $\hat r_b(\mathcal l)$。输出增益 $\hat g_b(\mathcal l)$ 由包络后置滤波器进一步修改，以减少每个频带中剩余噪声的感知影响。</p>
+<h3 id="DNN-模型"><a href="#DNN-模型" class="headerlink" title="DNN 模型"></a>DNN 模型</h3><img src="https://s2.loli.net/2022/06/01/7yv4bdMkq8fn5Yc.png" alt="image-20220601110248320" style="zoom:67%;" />
+
+<p>DNN 架构如图 3 所示。卷积层在时间上对齐，以便将来使用多达 M 帧。 为了实现挑战中允许的 40 毫秒算法延迟，包括 10 毫秒的帧大小和 10 毫秒的重叠，我们有 M = 2。</p>
+<p>模型使用的输入特征与我们使用的 32 个波段相关联。对于每个波段，我们使用三个特征：</p>
+<ol>
+<li>the energy in the band with look-ahead $Y_b(\mathcal l+M)$</li>
+<li>the pitch coherence without look-ahead $q_{y,b}(\mathcal l)$</li>
+<li>the energy of the far-end band with look-ahead $F_b(\mathcal l+M)$</li>
+</ol>
+<p>除了这 96 个与波段相关的特征外，我们还使用了四个额外的标量特征（总共 100 个输入特征）：</p>
+<ol>
+<li>音高周期 $T(\mathcal l)$</li>
+<li>音高相关性的估计</li>
+<li>非平稳性估计</li>
+<li>根据 $y(n)$ 计算的激励的 L1 范数与 L2 范数之比</li>
+</ol>
+<p>对于每个波段 b，我们有 2 个输出：增益 $\hat g_b(\mathcal l)$ 近似于 $g_b(\mathcal l)$，强度 $\hat r_b(\mathcal l)$ 近似于 $r_b(\mathcal l)$。</p>
+<h2 id="Alibaba-Rank-2"><a href="#Alibaba-Rank-2" class="headerlink" title="Alibaba-Rank 2"></a>Alibaba-Rank 2</h2><p>由三个模块组成：基于广义互相关相位变换（GCC-PHAT）的时延补偿、基于加权递推最小二乘（wRLS）的线性自适应滤波和基于神经网络的残余回声抑制。</p>
+<img src="https://s2.loli.net/2022/06/01/ox6WzpORTy2Q7uh.png" alt="image-20220601170806850" style="zoom:67%;" />
+
+<p>如图 1，在时间 t 处捕获的信号可以表示为：<br>$$<br>d(t)=x(t)∗a(t)+s(t)+v(t)<br>$$<br>其中 $x(t),s(t)$ 和 $v(t)$ 分别是远端信号、近端信号和信号建模误差。$a(t)$ 表示回声路径，∗ 表示卷积。为简单起见，以下假设 $v(t)=0$。$d、x、a、s$ 的频率表示分别表示为 $D、X、A、S$。</p>
+<h3 id="时延补偿"><a href="#时延补偿" class="headerlink" title="时延补偿"></a>时延补偿</h3><p>首先采用 GCC-PHAT 算法对远端和近端信号进行对齐。广义互相关定义为 $\Phi_{t,f}=E[X_{t,f}D_{t,f}^*]$，其中 $E$ 表示期望，$f$ 表示频率 index，$(·)^*$ 表示变量的共轭。其实现为：<br>$$<br>\Phi_{t,f}=\alpha\Phi_{t-1,f}+(1-\alpha)X_{t,f}D_{t,f}^*<br>$$<br>其中 $α$ 是平滑参数。通过执行逆快速傅立叶变换（IFFT）找到相对时延 $\tau$：<br>$$<br>\tau=\arg\max_{\tau}IFFT(\frac{\Phi_{t,f}}{|\Phi_{t,f}|})<br>$$</p>
+<h3 id="wRLS-滤波"><a href="#wRLS-滤波" class="headerlink" title="wRLS 滤波"></a>wRLS 滤波</h3><p>在频域中对时间对齐信号 $x(t′)$ 和 $d(t)$ 执行线性滤波。假设回声路径为 L 个 taps，则信号模型重新表示为：<br>$$<br>\begin{bmatrix} D_{t,f} \ x_{L,f} \end{bmatrix}=\begin{bmatrix} 1 &amp; a_{L,f}^H \ 0 &amp; I \end{bmatrix}\begin{bmatrix} S_{t,f} \ x_{L,f} \end{bmatrix}<br>$$<br>其中，$x_{L,f}=[X(t’,f),X(t’-1,f),…,X(t’-L,f)]^T,a_{L,f}=[A(t,f),A(t-1,f),…,A(t-L+1,f)]^T$，$(·)^T$ 表示转置，$(·)^H$ 表示厄米特转置。$I$ 是一个阶为 $L$ 的幺正矩阵。近端语音可以通过以下方式分离：<br>$$<br>\begin{bmatrix} \hat S_{t,f} \ x_{L,f} \end{bmatrix}=B_f\begin{bmatrix} D_{t,f} \ x_{L,f} \end{bmatrix}<br>$$<br>$\hat{(·)}$ 表示变量的估计值，$B_f$ 为分解矩阵（unmixing matrix）。假设 ${D_{t,f},X_{L,f}}$ 独立，分解矩阵具有以下形式：<br>$$<br>B_f=\begin{bmatrix} 1 &amp; w_{L,f}^H \ 0 &amp; I \end{bmatrix}<br>$$<br>该问题可以用已有的独立分量分析（ICA）算法和基于辅助函数的 Aux-ICA 算法求解。求解后得到分离的近端语音为：<br>$$<br>\hat S_{t,f}=D_{t,f}+w_{L,f}^Hx_{L,f}<br>$$</p>
+<h3 id="RES"><a href="#RES" class="headerlink" title="RES"></a>RES</h3><img src="https://s2.loli.net/2022/06/01/R2ezFW4TGaHXh9b.png" alt="image-20220601174321286" style="zoom: 67%;" />
+
+<p>图 2 显示了残余回声抑制的 Deep-FSMN 模型。将时间对齐的远端信号和 wRLS 滤波器输出信号的对数滤波器组能量（fbank）用作神经网络的输入。计算流程如下所示：<br>$$<br>f_{in}=[fbank(\hat S_t),fbank(X_{t’})] \<br>p^1=ReLU(U^0f_{in}+v^0) \<br>p^{j+1}=FSMN(p^j),j\in [1,2,…,J-1] \<br>f_{out}=Sigmoid(U^{J+1}p^J+v^{J+1})<br>$$<br>其中 $U^j,v^j$ 分别表示第 j 层的权重矩阵和偏差向量。每个 FSMN 块具有一个隐藏层、一个投影层和一个存储块。具体如下：<br>$$<br>h^j_t=ReLU(U^j_1p^j_t+v^j) \<br>\hat p_t=U^j_2h^j_t \<br>p^{j+1}<em>t=p^j_t+\hat p_t+\sum</em>{i=0}^Nm^j_i\odot\hat p_{t-i}<br>$$<br>其中 $m^j_i$ 是一个对历史信息 $\hat p_{t-i}$ 加权的记忆参数，$\odot$ 表示按元素相乘，N 是向后的顺序。在记忆块之间添加跳跃连接，以缓解训练阶段的梯度消失问题。</p>
+<p>训练目标是改进版的 vanilla Phase Sensitive Mask (PSM)，并且被裁剪到 [0,1] 范围：<br>$$<br>PSM=\frac{|S_{t,f}|}{|\hat S_{t,f}|}·Re(\frac{S_{t,f}}{\hat S_{t,f}})<br>$$</p>
+<h2 id="奥尔登堡大学-Rank-5"><a href="#奥尔登堡大学-Rank-5" class="headerlink" title="奥尔登堡大学-Rank 5"></a>奥尔登堡大学-Rank 5</h2><p>提出了一种双信号变换 LSTM 网络。（<strong>预训练模型</strong> <a target="_blank" rel="noopener" href="https://github.com/breizhn/DTLN-aec%EF%BC%89">https://github.com/breizhn/DTLN-aec）</a></p>
+<h3 id="信号模型-1"><a href="#信号模型-1" class="headerlink" title="信号模型"></a>信号模型</h3><img src="https://s2.loli.net/2022/06/02/gHtpWkdrUNBOK4f.png" alt="image-20220602141237013" style="zoom:67%;" />
+
+<p>麦克风信号 $y(n)$，远端信号 $x(n)$，近端信号可以描述为以下信号的组合：<br>$$<br>y(n)=s(n)+v(n)+d(n)<br>$$<br>$s(n)$ 为近端语音信号，$v(n)$ 是噪声信号，$d(n)$ 为回声信号，是远端信号 $x(n)$ 与传输路径 $h(n)$ 的脉冲响应的卷积。所需信号是近端语音信号 $s(n)$，而所有其他信号部分都应删除。此任务是<strong>音源分离任务</strong>。如果仅存在远端和噪声信号，则所需信号为静音。</p>
+<h3 id="DTLN-模型"><a href="#DTLN-模型" class="headerlink" title="DTLN 模型"></a>DTLN 模型</h3><p><img src="https://s2.loli.net/2022/06/02/MvNF3g45OyAdicj.png" alt="image-20220602142025795"></p>
+<p>该网络由两个部分组成，每个部分有两个 LSTM 层和一个全连接层，该层用 sigmoid 激活并预测掩码。</p>
+<p><strong>第一部分</strong>将远端和近端的归一化对数功率谱连接并输入到网络中。每个麦克风信号通过<strong>即时层归一化</strong>（iLN）进行单独归一化，以考虑电平变化（level variations）。即时层规范化类似于标准的 layer normalization，其中每个帧单独进行归一化，但不随时间累积统计信息。该部分预测一个时频掩码，该掩码应用于近端麦克风信号的非归一化幅度 STFT。使用原始近端信号的相位，通过逆 FFT 将估计的幅值转换回时域。</p>
+<p><strong>第二部分</strong>首先使用一个 1D 卷积层获得特征表示。该部分接受先前预测信号的归一化特征表示和远端信号的归一化特征表示。为了将两个信号转换到时域，应用相同的权重，但单独执行的 iLN 归一化，以便为每个表示启用单独的缩放和偏差。之后，通过预测的掩码乘以第一部分输出的非归一化特征表示，使用 1D 卷积层将估计的特征表示转换回时域。为了重建连续时间信号，使用了重叠加法过程。</p>
+<p>对于该任务，选择了 32 ms 的帧长和 8 ms 的帧移。FFT 大小为 512，学习特征表示的大小也为 512。每层选择 512 个 LSTM 单元。该模型共有 1030 万个参数。</p>
+<h2 id="中国科学院大学-Rank-7"><a href="#中国科学院大学-Rank-7" class="headerlink" title="中国科学院大学-Rank 7"></a>中国科学院大学-Rank 7</h2><p>分三个部分：消除线性回声的分区块频域自适应滤波（PBFDLMS）、抑制残余回声的 DCU-Net、小型 DCU-Net 以消除第二部分未能消除的回声。（开源 <a target="_blank" rel="noopener" href="https://github.com/razorenhua/AEC-Challenge%EF%BC%89">https://github.com/razorenhua/AEC-Challenge）</a></p>
+<img src="https://s2.loli.net/2022/06/02/kcztNUnl65eYx9D.png" alt="image-20220602150432959" style="zoom:67%;" />
+
+<h3 id="信号模型-2"><a href="#信号模型-2" class="headerlink" title="信号模型"></a>信号模型</h3><img src="https://s2.loli.net/2022/06/02/pzb7sBVjGLSyHZQ.png" alt="image-20220602150450563" style="zoom:67%;" />
+
+<p>远端信号 $r(n)$ 在传输室中记录，然后传输到接收室。扬声器播放 $r(n)$，然后通过回声路径 $h(n)$ 传输到接收室内的麦克风。接收室内的麦克风信号可以建模为：<br>$$<br>d(n)=r(n)*h(n)+s(n)+v(n)<br>$$<br>其中 * 表示卷积，n 表示离散时间索引，$s(n)$ 表示近端语音信号，$v(n)$ 表示噪声。</p>
+<h3 id="自适应滤波"><a href="#自适应滤波" class="headerlink" title="自适应滤波"></a>自适应滤波</h3><img src="https://s2.loli.net/2022/06/02/Om9BPYw4rAfc2V6.png" alt="image-20220602152412725" style="zoom: 80%;" />
+
+<p>为了降低计算复杂度并提高收敛速度，本文提出使用<strong>广义互相关相位变换</strong>（GCC-PHAT）方法来估计时延，然后使用估计的时延来延迟远端参考信号 $∆$。</p>
+<p>之后，时间对齐的远端参考信号 $r(n-\Delta)$ 和麦克风信号 $d(n)$ 均使用 STFT 转换到频域，用 $R(l,k)$ 和 $D(l,k)$ 表示，其中 $l$ 表示帧索引，$k$ 表示频率索引。</p>
+<p>回声通过 <strong>PBFDLMS 算法</strong>估计，并从麦克风信号减去，得到误差信号 $E(l,k)$。</p>
+<p>对于双讲场景，需要根据麦克风信号和远端信号优化步长。我们使用麦克风信号和远端信号的<strong>幅度平方相关性</strong>（MSC）来控制自适应滤波器系数的更新。当 MSC 接近 1 时，自适应滤波器系数可以快速更新。相反，当 MSC 接近 0 时，自适应滤波器系数应停止更新。</p>
+<p>在某些情况下，由于回声路径有些发散，或者回声路径变化很快，我们无法快速跟踪这种变化，因此可以通过自适应滤波算法来增强声回声，而不是消除/减少回声。为了解决这个问题，我们将误差信号 $E(l,k)$ 的幅度直接限制在每个时频单元中，由下式给出：<br>$$<br>|E(l,k)|=min{|E(l,k)|,\beta|D(l,k)|}<br>$$<br>其中 $β≥1$ 是一个常量值。本文使用 $β=2$。我们发现，使用此约束对于提高自适应滤波算法的鲁棒性非常重要，尤其是在回声路径快速变化的情况下。我们<strong>仅限制幅度</strong>，误差信号的相位保持不变。</p>
+<h3 id="DCU-Net"><a href="#DCU-Net" class="headerlink" title="DCU-Net"></a>DCU-Net</h3><p><img src="https://s2.loli.net/2022/06/02/moBzw3h87j5ug6T.png" alt="image-20220602153328545"></p>
+<p>原始配置，在训练和测试过程中，整个语音信息都参与了计算，这阻碍了实时推理。其次，由于只提供了卷积编码器和解码器，因此时间相关性不能有效地被分解。为了解决上述问题，我们重新设计了名为 DCGRU-Net-22 的原始体系结构（编解码器的层数均为 22 层），修改如下：</p>
+<ol>
+<li>将时间轴上的所有卷积核大小和步长设置为 1，以避免计算未来的信息</li>
+<li>添加了与 GRU 的 recurrent connection，以更好地探索编码器层与其对应解码器层之间的时间连接（temporal connection）</li>
+</ol>
+<p>在 DCGRU-Net-22 中，包括麦克风信号 $D(l,k)$ 、远端参考信号 $R(l,k)$ 和误差信号 $E(l,k)$ 在内的多个信号的实部和虚部沿通道轴连接，作为输入特征。其输出还具有两个分量，即增强的近端信号 $\bar S(l,k)$ 的实部和虚部。</p>
+<h3 id="Tiny-DCU-Net"><a href="#Tiny-DCU-Net" class="headerlink" title="Tiny DCU-Net"></a>Tiny DCU-Net</h3><img src="https://s2.loli.net/2022/06/02/3CJZontXpM5qPdf.png" alt="image-20220602153357731" style="zoom:80%;" />
+
+<p>经过前两个阶段，仍然存在一些非语音残余回声。我们可以将这些非语音残余回声分量视为非平稳噪声分量，可以通过基于深度学习的后处理算法进一步抑制。</p>
+<p>编码器和解码器在这一阶段的层数只有 16 层。该网络接受第二步增强的近端信号 $\bar S(l,k)$ 的实部和虚部，输出的是增强信号 $\hat S(l,k)$ 的实部和虚部。</p>
+<h2 id="西北工业大学-Rank-8"><a href="#西北工业大学-Rank-8" class="headerlink" title="西北工业大学-Rank 8"></a>西北工业大学-Rank 8</h2><p>采用复编码器-解码器结构的网络来解决 AEC 任务。使用复 Conv2d 层和复转置 Conv2d 层作为编码器和解码器，分别对远端和近端信号的复频谱进行建模，并使用复 LSTM 层作为掩码估计模块。</p>
+<h3 id="信号模型-3"><a href="#信号模型-3" class="headerlink" title="信号模型"></a>信号模型</h3><img src="https://s2.loli.net/2022/06/06/MhbU9oLeXwvORzs.png" alt="image-20220606091009834" style="zoom:67%;" />
+
+<p>麦克风信号 $y(n)$ 由近端语音 $s(n)$、回声 $d(n)$ 和背景噪声 $v(n)$ 组成：<br>$$<br>y(n)=s(n)+v(n)+d(n),d(n)=x(n)*h(n)<br>$$</p>
+<h3 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h3><img src="https://s2.loli.net/2022/06/06/Z1dEX8rlCiWxYMF.png" alt="image-20220606091324598" style="zoom:80%;" />
+
+<p>模型架构如上图，红色虚线区域表示 $y(n)$ 和 $x(n)$ 之间的时间延迟。F-T-LSTM-real 和 F-T-LSTM-imag 分别用于建模高维复杂结构的实部和虚部。$y(n)$ 和 $x(n)$ 分别通过 STFT 转换为 Y、X。通过逆 STFT 重构估计信号 $\hat s(n)$。</p>
+<p>由三个模块组成：复编码器-解码器网络、F-T-LSTM 和复 LSTM。</p>
+<p>对于序列输入 $w\in\mathbb R^{2\times N}$，N 为音频采样点的数量，2 表示 $y(n)$ 和 $x(n)$ 两个信号。对 w 进行 STFT，得到复数谱 $W=W_r+jW_i,W\in\mathbb R^{4\times T\times F}$，矩阵 $W_r$ 和 $W_i$ 分别表示 $W$ 的实部和虚部，T 表示帧的数量，F 表示 STFT 后的频率维度。</p>
+<p>复卷积核定义为 $K=K_r+jK_i$，实值矩阵 $K_r$ 和 $K_i$ 分别表示复数核的实部和虚部，复数运算 $W\otimes K$ 定义为：<br>$$<br>H=(K_r<em>W_r-K_i</em>W_i)+j(K_r<em>W_i+K_i</em>W_r)=H_r+jH_i<br>$$<br>实部的 F-T-LSTM 描述如下：</p>
+<img src="https://s2.loli.net/2022/06/06/7YoXDpAcJL5S2Vb.png" alt="image-20220606093043576" style="zoom:67%;" />
+
+<p>$f(·)$ 是由 F-LSTM 定义的映射函数，它是双向 LSTM。$h(·)$ 是 T-LSTM 定义的映射函数，它扫描时间轴。详细描述如表 1 所示：</p>
+<img src="https://s2.loli.net/2022/06/06/9ZTC3M6XicOndu4.png" alt="image-20220606093724076" style="zoom:80%;" />
+
+<h1 id="AEC-Challenge-2022"><a href="#AEC-Challenge-2022" class="headerlink" title="AEC Challenge 2022"></a>AEC Challenge 2022</h1><h2 id="Baidu-Rank-1"><a href="#Baidu-Rank-1" class="headerlink" title="Baidu-Rank 1"></a>Baidu-Rank 1</h2><p>提出了基于信号处理和神经网络的去噪、回声消除的系统。信号处理部分包括基于广义相关关系的时延补偿器（TDC）和基于 PNLMS 自适应滤波器的双回声路径模型的线性回声消除。神经网络部分，提出了轴向自注意的多尺度时频卷积网络（MTFAA-Net）。</p>
+<p><strong>PS：</strong>论文里面线性滤波的部分没有讲，网络部分也有好多没讲清楚的。</p>
+<h3 id="信号模型-4"><a href="#信号模型-4" class="headerlink" title="信号模型"></a>信号模型</h3><p>麦克风信号 $Y(t,f)$ 由回声 $E(t,f)$、噪声 $N(t,f)$ 和带混响的近端语音 $s(t,f)H^e(f)+s(t,f)H^l(f)$ 组成：<br>$$<br>Y(t,f)=s(t,f)H^e(f)+s(t,f)H^l(f)+E(t,f)+N(t,f)<br>$$<br>$H^e(f)$ 和 $H^l(f)$ 分别表示近端语音与房间的脉冲响应和后期反射。t、f 分别为时间和频率索引。$s(t,f)H^e(f)$ 将作为待估计的目标。</p>
+<p>线性 AEC 的输出 $Y_{laec}(t,f)$ 可以看作是干净语音、残余回波、混响和背景噪声的混合。</p>
+<h3 id="模型架构-1"><a href="#模型架构-1" class="headerlink" title="模型架构"></a>模型架构</h3><p><img src="https://s2.loli.net/2022/06/06/pkgS1zn4jVNarYL.png" alt="image-20220606102348452"></p>
+<p>图 1 显示了具有 LAEC 和 TDC 的 MTFAA 网络的总体结构。MTFAA 网络由相位编码器（PE）、频带合并（BM）和频带分割（BS）模块、掩码估计和应用（MEA）模块以及主网络（Main-Net）模块组成。主网络包括几个类似的部分，每个部分包括频率下采样（FD）或频率上采样（FU）、T-F 卷积和轴向自注意力（ASA）。</p>
+<img src="https://s2.loli.net/2022/06/06/V92HB5bmYIpgatn.png" alt="image-20220606103233034" style="zoom: 67%;" />
+
+<h4 id="相位编码器（PE）"><a href="#相位编码器（PE）" class="headerlink" title="相位编码器（PE）"></a>相位编码器（PE）</h4><p>为了将复数域的频谱特征映射到实数域的频谱特征，我们设计了一个 PE 模块，如图 2(a) 所示。</p>
+<p>在 PE 模块中，有三个复卷积层，分别接收麦克风信号、LAEC 输出和远端信号。此外，PE 还包含复到实层和特征动态范围压缩（FDRC）层。FDRC 旨在减少语音特征的动态范围，从而使模型更加健壮。</p>
+<h4 id="频带合并和分割（BM-和-BS）"><a href="#频带合并和分割（BM-和-BS）" class="headerlink" title="频带合并和分割（BM 和 BS）"></a>频带合并和分割（BM 和 BS）</h4><p>有价值的语音信息在频率维度上的分布是不均匀的，尤其是在全频带信号中。在高频段有许多冗余特征，高频特征融合可以减少冗余。BS 是 BM 的逆过程。在本文中，BM 和 BS 频带按照 ERB 比例进行间隔。</p>
+<h4 id="T-F-卷积模块（TFCM）"><a href="#T-F-卷积模块（TFCM）" class="headerlink" title="T-F 卷积模块（TFCM）"></a>T-F 卷积模块（TFCM）</h4><p>T-F 卷积模块（TFCM）使用的卷积块如图 2(b) 所示，它由两个逐点卷积（P-Conv）层和一个核大小为（3,3）的深度卷积 D-Conv 层组成。</p>
+<h4 id="轴向自注意力（ASA）"><a href="#轴向自注意力（ASA）" class="headerlink" title="轴向自注意力（ASA）"></a>轴向自注意力（ASA）</h4><p>本文提出了一种语音 ASA 机制。ASA 可以减少对内存和计算的需求，这更适合于长序列信号。图 2(d) 说明了 ASA 的结构，其中 $C_i$ 和 $C$ 分别表示输入通道数和注意力通道数。ASA 的注意力得分矩阵沿频率轴和时间轴计算，分别称为 F-attention 和 T-attention。得分矩阵可以表示为：<br>$$<br>M_F(t)=Softmax(Q_f(t)K^T_f(t))<br>\ M_T(f)=Softmax(Mask(Q_t(f)K^T_t(f)))<br>$$<br>其中，$Q_f(t),K_f(t),M_F(t)$ 表示在帧 t 时 key、query 和 F-attention 得分矩阵。$Q_t(f),K_t(f),M_T(f)$ 表示在频带 f 时 key、query 和 T-attention 得分矩阵。</p>
+<p>T-attention 中的 MASK 是为了调整 ASA 的时间依赖。对于 MTFAA 网络流，屏蔽输入矩阵的上三角部分，从而导致因果 ASA。</p>
+<h4 id="频率上采样和下采样（FD-和-FU）"><a href="#频率上采样和下采样（FD-和-FU）" class="headerlink" title="频率上采样和下采样（FD 和 FU）"></a>频率上采样和下采样（FD 和 FU）</h4><p>FD 和 FU 采样旨在提取多尺度特征。在每个尺度上，TFCM 和 ASA 用于特征建模，这将提高网络描述特征的能力。FD 是一个卷积块，它包含一个 Conv2D 层、一个 batchnorm（BN）层和一个 Prelu 激活层。</p>
+<p>FU 如图 2(c) 所示，其中 Deconv2D 是转置卷积。FU 中还使用了门控机制。</p>
+<h4 id="掩码估计和应用（MEA）"><a href="#掩码估计和应用（MEA）" class="headerlink" title="掩码估计和应用（MEA）"></a>掩码估计和应用（MEA）</h4><p>包括两个阶段：</p>
+<ol>
+<li>估计 real mask，并以 deep-filter 的形式将其应用于幅度谱</li>
+<li>估计 complex mask，并将其应用于幅度谱和相位谱</li>
+</ol>
+<h2 id="Kuaishou-Rank-2"><a href="#Kuaishou-Rank-2" class="headerlink" title="Kuaishou-Rank 2"></a>Kuaishou-Rank 2</h2><p>提出了一种具有网络内和网络间融合的深度层次融合（DHF）网络，以进一步提高宽频带 AEC 性能。同时，这项工作扩展了现有的宽频带系统（16kHz），以实现<strong>全频带</strong>（48kHz）<strong>AEC 和 ASR 的兼容性</strong>。</p>
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="https://s2.loli.net/2022/06/06/ofJFInpYcaZz1HL.png" alt="image-20220606135250785"></p>
+<p>如图 1，输入的 48kHz 近端和远端信号输入到由 SpeexDSP 实现的线性 AEC 模块。关于系统延迟引起的近端和远端信号之间的时间延迟，我们使用基于<strong>互相关</strong>的鲁棒延迟估计方法来估计和补偿因果延迟。</p>
+<p>时域近端信号 d、远端信号 r 和线性 AEC 输出信号 e 通过 1440 点（30ms）短时傅里叶变换（STFT）和 480 点（10ms）步长变换到时频（T-F）域。这些 T-F 表示进一步分为<strong>宽频</strong>（D16，R16，E16，0-16kHz）和<strong>高频</strong>（D16−48，R16−48，E16−48，16-48kHz）。</p>
+<p>宽频信号 D16、R16 和 E16 连接到 I16，然后输入到两个宽频 CrossNet，通过融合网络将这两个宽频 CrossNet 估计的语音进行融合。对于宽频信号，采用了由预训练 ASR 编码器获得的宽频信号损失和 ASR 损失的<strong>联合损失</strong>。</p>
+<p>高频网络基于高频信号 $I_{16−48}$ 和估计的宽频语音 $\hat S_{16}$ 估计高频语音 $\hat S_{16−48}$。最后，从 $\hat S_{16}$ 和 $\hat S_{16-48}$ 获得完整的幅度谱，使用 iSTFT 将完整的幅度谱转换回时域。</p>
+<h3 id="网络内融合"><a href="#网络内融合" class="headerlink" title="网络内融合"></a>网络内融合</h3><img src="https://s2.loli.net/2022/06/06/9edolyOjaCB1JxA.png" alt="image-20220606141455729" style="zoom: 80%;" />
+
+<p>如图 2 所示，提出了一个宽频 GRU-CrossNet，该网络采用两个<strong>并行分支</strong>来明确建模语音和干扰（噪声和回声）。线性 AEC 的输出、近端和远端信号的对数功率谱作为卷积块的输入，以执行特征提取。最后通过由 sigmoid 激活的 dense 层分别产生用于语音和干扰的幅度掩码。</p>
+<p>语音和干扰之间的网络内融合是通过为每个卷积层和 GRU 层添加<strong>交叉连接</strong>来实现的。在语音分支中，所有 GRU 层输出都被送入 dense 层。当两个分支的输出用于训练阶段的联合损失计算时，干扰分支中的虚线块在测试阶段被丢弃。</p>
+<p>还使用了一个并行的单独训练的 TCN-CrossNet。TCN-CrossNet 的配置与 GRU-CrossNet 相同，只是 GRU 层被语音增强任务的 TCN 层所取代。</p>
+<h3 id="网络间融合"><a href="#网络间融合" class="headerlink" title="网络间融合"></a>网络间融合</h3><img src="https://s2.loli.net/2022/06/06/xDJ8BVzIL3tUYPX.png" alt="image-20220606144000322" style="zoom:80%;" />
+
+<p>提出了一种**基于子带(sub-band)**的融合模块来融合宽频网络的输出。如图 3，近端宽带信号 D16、远端宽带信号 R16、宽带估计语音信号 $\hat S^{TCN}<em>{16}$ 和 $\hat S^{GRU}</em>{16}$ 在信道维度上串联，以形成融合网络的输入。</p>
+<p>融合网络有三个 conv2D 层、一个 GRU 层和一个 dense 层，softmax 激活。两个 AEC 系统的子带融合权重由融合网络估计。为了避免在两个系统之间快速切换引入的伪影，权重通过指数移动平均（exponential moving average）沿时域进一步平滑，衰减设置为 0.95。将增强信号与相应的权重相乘，并将加权信号相加以生成融合输出 $\hat S_{16}$。</p>
+<h3 id="宽频损失融合"><a href="#宽频损失融合" class="headerlink" title="宽频损失融合"></a>宽频损失融合</h3><p>如图 1 所示，宽频损失包括确保语音增强质量的信号损失和优化语音识别精度的 ASR 损失。</p>
+<p>对于信号域损失，采用了最佳尺度不变信噪比（OSISNR）损失，因为它有助于以较少的能量保存语音，并有助于语音分离任务。此外，使用 Magnitude power-law Compressed Mean Square Error（MC-MSE）损失函数进一步抑制估计语音的残余噪声。我们将这两个信号损失函数结合起来，通过每个分支的超参数 γ 进行加权：<br>$$<br>\mathcal L_S=\mathcal L_{OSISNR}+\gamma\mathcal L_{MC-MSE}<br>$$<br>$\mathcal L_S$ 用于图 2 中语音分支的损失计算，相同的损失 $\mathcal L_{S-i}$ 用于干扰分支。</p>
+<p>此外，使用干净语音 ASR 嵌入和估计语音 ASR 嵌入之间的 Wasserstein 距离作为 ASR 损失。ASR 嵌入由预训练好的 WeNet 编码器提取。整体宽频损失 $\mathcal L_{WB}$ 为：<br>$$<br>\mathcal L_{WB}=\mathcal L_S+\mathcal L_{S-i}+\mathcal L_{ASR}<br>$$</p>
+<h3 id="全频带系统"><a href="#全频带系统" class="headerlink" title="全频带系统"></a>全频带系统</h3><p>在高频网络中，利用两个 CNN 分支分别从估计的宽频语音和带噪的高频语音中提取宽频和高频特征。然后将宽频和高频特征组合并馈入 recurrent 层和前馈层，以估计高频掩码 $M_{16−48}$。利用干净和估计的高频语音之间的 OSISNR 和 MC-MSE 损失来优化高频网络。<br>$$<br>\mathcal L_{HB}=\mathcal L_{OSISNR}+\mathcal L_{MC-MSE}<br>$$</p>
+<h2 id="西北工业大学-Rank-3"><a href="#西北工业大学-Rank-3" class="headerlink" title="西北工业大学-Rank 3"></a>西北工业大学-Rank 3</h2><p>线性 AEC + 神经网络 NAEC。</p>
+<p>使用门控卷积 F-T-LSTM 神经网络（GFTNN）作为主干，并通过<strong>多任务学习</strong>框架来构建非线性滤波器，其中语音活动检测（VAD）模块作为辅助任务，目的是避免可能导致语音失真的过度抑制。</p>
+<p>此外，我们采用了回声感知损失函数，其中均方误差（MSE）损失可以根据信号回声比（SER）进行优化，从而进一步抑制回声。</p>
+<h3 id="信号模型-5"><a href="#信号模型-5" class="headerlink" title="信号模型"></a>信号模型</h3><img src="https://s2.loli.net/2022/06/06/TnUVf2sItzMwe34.png" alt="image-20220606153525152" style="zoom:80%;" />
+
+<p>麦克风信号 $d(n)$ 由近端语音 $s(n)$、回声 $z(n)$ 和背景噪声 $v(n)$ 组成，$z(n)$ 是由回声路径卷积的远端信号 $x(n)$ 获得的。误差信号 $e(n)$ 和线性回声 $y(n)$ 通过自适应滤波器使用 $x(n)$ 和 $d(n)$ 生成。D、 E、X 和 Y 分别是 d、e、x 和 y 的频域表示。</p>
+<p><img src="https://s2.loli.net/2022/06/06/ECTzYqgtnGWOA97.png" alt="image-20220606154752462"></p>
+<h3 id="线性滤波"><a href="#线性滤波" class="headerlink" title="线性滤波"></a>线性滤波</h3><p>使用带离散余弦变换（DCT）调制的 3-band 有限冲激响应（FIR）滤波器组将全频带（48kHz）信号分解为子频带，只处理宽频带（16kHz）信号，最后通过<strong>平均增益控制</strong>合成全频带信号。</p>
+<p>如图 2(a) 所示，对于全频段信号 $d_{full}$ 和 $x_{full}$ ，我们使用带通滤波器获得宽频带信号 d 和 x，其中 $d_h$ 表示信号的剩余高频段（8 至 16kHz 和 16 至 24kHz）。$d_h$ 的每帧平均增益计算如下：<br>$$<br>g(t)=min(\frac{\sum^b_a \hat S(t,f)}{\sum^b_a D(t,f)},\frac{\sum^d_c \hat S(t,f)}{\sum^d_cD(t,f)})<br>$$<br>${a=11,b=81}$ 和 ${c=121,d=161}$ 分别涵盖 0.5 至 4kHz 和 6 至 8kHz 的频率范围。</p>
+<p>图 1 的 AEC 系统中，使用<strong>广义互相关和相位变换</strong>（GCC-PHAT）实现时延估计，并使用 <strong>MDF 和 wRLS</strong> 实现线性 AEC。</p>
+<p>子带合成过程如下：<br>$$<br>\hat S_{full}(t,f)=SYN(\hat S(t,f),g(t)·D_h(t,f))<br>$$<br>其中，$\hat S、\hat S_{full}、D_h$ 是 $\hat s、\hat s_{full}、d_h$ 的频域表示。SYN 表示实时通信场景中常用的子带合成方法。</p>
+<h3 id="GFTNN"><a href="#GFTNN" class="headerlink" title="GFTNN"></a>GFTNN</h3><p>图 2 中描述了 GFTNN 的四个子模块，即 GConv、TrGConv、VAD 和FTLSTM。$*r/*i$ 表示某个信号在频域中的实部和虚部。输入特性的虚线框表示<strong>可能不使用某个信号</strong>。在本文中，我们探讨了三种类型的组合，即 DX、EX 和 DEY。</p>
+<p>以 DEY 为例，输入特征 $w$ 由 $d(n),e(n),y(n)$ 组成，对 $w$ 进行 STFT，得到复谱 $W=W_r+jW_i$。</p>
+<p>GFTNN 编码器由 4 个 GConv 层组成，每个 Conv2d 层具有相同的输入和输出通道，但第一个 GConv 层除外，该层需要根据输入信号进行选择（在给定示例中为 6）。Conv 1×1 用于连接浅层和深层特征表示。</p>
+<p>Real/Imag 解码器由 4 个 TrGConv 层组成，每个 Transpose-Conv2d 层具有相同的输入和输出通道，但最后一个 TrGConv 层的输出通道需要为 1，用于估计干净近端频谱的实/虚部分。$\oplus$ 表示 Conv 1×1 的输出和之前 TrGConv 层的输出进行拼接。</p>
+<h1 id="Phase-aware-Speech-Enhancement-with-Deep-Complex-U-Net（2019-ICLR）"><a href="#Phase-aware-Speech-Enhancement-with-Deep-Complex-U-Net（2019-ICLR）" class="headerlink" title="Phase-aware Speech Enhancement with Deep Complex U-Net（2019 ICLR）"></a>Phase-aware Speech Enhancement with Deep Complex U-Net（2019 ICLR）</h1><img src="https://s2.loli.net/2022/06/09/aBURZMGVkSCY5X7.png" alt="image-20220609103026504" style="zoom:67%;" />
+
+<p>之后有一些论文是基于这篇的修改，但是这篇论文由于训练数据弄混了，实验数据出错，从 ICLR 撤稿了，<strong>开源：</strong><a target="_blank" rel="noopener" href="https://paperswithcode.com/paper/phase-aware-speech-enhancement-with-deep-1">https://paperswithcode.com/paper/phase-aware-speech-enhancement-with-deep-1</a></p>
+<ul>
+<li>提出了 Deep Complex U-Net（DCU-Net）语音增强模型，这是基于 U-Net 的结构化模型，其中包含定义明确的复数值构建块以<strong>处理复数值</strong>。</li>
+<li>提出了一种<strong>极坐标复数掩码方法</strong>，以反映复数理想比率掩码（complex ideal ratio mask）的分布。</li>
+<li>定义了一种新的损失函数，即<strong>加权源失真比（wSDR）损失</strong>，该损失函数旨在与定量评估度量直接相关。</li>
+</ul>
+<h2 id="网络架构"><a href="#网络架构" class="headerlink" title="网络架构"></a>网络架构</h2><p><img src="https://s2.loli.net/2022/06/09/LBYqrRblgVxUZ3J.png" alt="image-20220609104741141"></p>
+<p>训练集的样本使用 STFT 将时域波形转为频谱图。先是三个卷积层，后三个是反卷积层，恢复输入的大小。使用作者提出的 Leaky CReLU 激活函数。</p>
+<p>给定具有实值矩阵 A 和 B 的复数卷积核 $W=A+iB$，对具有 W 的复数向量 $h=x+iy$ 的复数卷积运算由 W 完成 $W∗h=(A∗x−B∗y)+i(B∗x+A∗y)$ 。</p>
+<h2 id="极坐标复数掩码"><a href="#极坐标复数掩码" class="headerlink" title="极坐标复数掩码"></a>极坐标复数掩码</h2><p>计算 CRM 掩码的公式表达如下。其中 $\hat M_{t,f}$ 表示要求的 CRM 掩码，$O_{t,f}$ 表示神经网络的输出。</p>
+<img src="https://s2.loli.net/2022/06/09/zJ7l4kvAxohLu6g.png" alt="image-20220609110453116" style="zoom:67%;" />
+
+<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><p>由于相位结构的随机性，在复数的 STFT 域中用 MSE 优化模型的相位是不行的。为此提出了一个 weighted-SDR（source-to-distortion ratio）损失函数。这使得损失函数限制在 [-1，1] 范围内，并且对相位也更加敏感，因为反相也会受到不利影响。</p>
+<p>为了适当地平衡每个损失项的贡献并解决尺度不敏感问题，我们将每个项的权重与每个信号的能量成比例。加权的损失函数公式如下：</p>
+<img src="https://s2.loli.net/2022/06/09/croSLhyBEHexOYp.png" alt="image-20220609110740853" style="zoom:67%;" />
+
+<img src="https://s2.loli.net/2022/06/09/e8Gf5KhdrQwLBV9.png" alt="image-20220609110757358" style="zoom:67%;" />
+
+<p>其中 $loss_{SDR}(z,\hat z)$ 是噪声预测项。$\hat z=x−\hat y$ 是估计的噪声，$α=\frac{||y||^2}{(||y||^2+||z||^2)}$ 为干净语音 y 与噪声 z 之间的能量比。$\hat y$ 是估计的信号。</p>
+<h1 id="Acoustic-Echo-Cancellation-by-Combining-Adaptive-Digital-Filter-and-Recurrent-Neural-Network（2020-InterSpeech）"><a href="#Acoustic-Echo-Cancellation-by-Combining-Adaptive-Digital-Filter-and-Recurrent-Neural-Network（2020-InterSpeech）" class="headerlink" title="Acoustic Echo Cancellation by Combining Adaptive Digital Filter and Recurrent Neural Network（2020 InterSpeech）"></a>Acoustic Echo Cancellation by Combining Adaptive Digital Filter and Recurrent Neural Network（2020 InterSpeech）</h1><img src="https://s2.loli.net/2022/06/06/8K2LMckhoTRN1nv.png" alt="image-20220606193054315" style="zoom: 67%;" />
+
+<p>自适应滤波器消除线性回声，神经网络消除非线性回声。</p>
+<ul>
+<li><strong>估计子带增益</strong>的方法</li>
+</ul>
+<img src="https://s2.loli.net/2022/06/06/4oSnKAaO7sILrVJ.png" alt="image-20220606195425001" style="zoom:80%;" />
+
+<h2 id="自适应滤波器-1"><a href="#自适应滤波器-1" class="headerlink" title="自适应滤波器"></a>自适应滤波器</h2><p>长度为 N 的 NLMS 滤波器定义如下：<br>$$<br>e(n)=d(n)-\hat y(n)=d(n)-\sum^{N-1}<em>{k=0}w_k(n)x(n-k)<br>$$<br>自适应步骤为：<br>$$<br>\hat w_k(n+1)=\hat w_k(n)+μ·e(n)\sum^{N−1}</em>{i=0}\frac{e(n)}{\sum^{N-1}_{i=0}|x(n-i)^2|}·x^*(n-k)<br>$$<br>其中 $x(n)$ 是远端信号，$d(n)$ 是接收到的麦克风信号，$\hat y(n)$ 是自适应滤波器估计的回声，$e(n)$ 是相应的估计误差，$w_k(n)$ 是时间为 n 的滤波器权重，$\hat w_k(n)$ 是估计值，μ 是学习率。</p>
+<p>学习率更新为：</p>
+<img src="https://s2.loli.net/2022/06/07/jpQh1iNKYtvRLVg.png" alt="image-20220607091148562" style="zoom:67%;" />
+
+<p>其中，$\hat Y(k,l)$ 和 $E(k,l)$ 是 $\hat y(n)$ 和 $e(n)$ 的频域计数器部分，k 是频率指数，l 是帧指数，$\hat η(l)$ 是表示滤波器调整不当的泄漏估计（leakage estimate）系数。它等于估计的回声功率 $P_Y(k,l)$ 和输出功率 $P_E(k,l)$ 之间的线性回归系数：</p>
+<img src="https://s2.loli.net/2022/06/07/DXk23RAVIlHQM6b.png" alt="image-20220607091634135" style="zoom:67%;" />
+
+<p>相关性计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/AyGBTq4JY2SCQzN.png" alt="image-20220607091707366" style="zoom:67%;" />
+
+<p>其中，$β_0$ 是泄漏估计的基本学习率，$\hat σ^2_{\hat Y(l)}$ 和 $\hat σ^2_{e(l)}$ 是估计回声和输出信号的总功率。可变平均参数 $β(l)$ 在不存在回声时调整估计值。</p>
+<h2 id="网络结构"><a href="#网络结构" class="headerlink" title="网络结构"></a>网络结构</h2><img src="https://s2.loli.net/2022/06/07/uSkq6ayKbNmC3zg.png" alt="image-20220607092144614" style="zoom:80%;" />
+
+<p>如图 3，网络包括三个功能模块，即<strong>双讲检测、回声估计和回声消除</strong>。</p>
+<ul>
+<li><strong>特征提取</strong>：为了减少神经元数量从而减小模型大小，不直接使用频谱，使用<strong>带有 bark 尺度的频带</strong>，与人类的感受相匹配。在这种情况下，总共使用 22 个频率子带，即 bark 频率倒谱系数（BFCC）。此外，还提取了<u>前六个 BFCC 特征的一阶和二阶差</u>、<u>前六个基音相关系数的离散余弦变换</u>（DCT）以及动态特征，即<u>基音周期和频谱非平稳度量（spectral non-stationary metric）</u>。这些特征总共有 42 个，作为剩余回声抑制神经网络的输入数据。</li>
+<li><strong>双讲检测（DTD）：</strong>由于自适应滤波后残余回声的幅度很小，语音活动很容易被检测出来。同时，由于参考信号的纯度，远端参考信号的语音活动也可以很容易地检测出来。在这种情况下，每个信道的两个语音活动检测（VAD）可以独立实现，从而降低 DTD 的难度。</li>
+<li><strong>残余回声估计：</strong>使用 GRU 模型根据<u>远端参考信号的输入特征、自适应滤波的输出信号和 DTD 结果</u>估计残余回声。</li>
+<li><strong>残余回声抑制：</strong>通过计算子带增益，使用由<u>全连接层连接的 GRU 模块</u>进行回声抑制。</li>
+</ul>
+<h1 id="DCCRN-Deep-Complex-Convolution-Recurrent-Network-for-Phase-Aware-Speech-Enhancement（2020-InterSpeech）"><a href="#DCCRN-Deep-Complex-Convolution-Recurrent-Network-for-Phase-Aware-Speech-Enhancement（2020-InterSpeech）" class="headerlink" title="DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement（2020 InterSpeech）"></a>DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement（2020 InterSpeech）</h1><p><img src="https://s2.loli.net/2022/06/09/jQcfKvGB9hwiLEy.png" alt="image-20220609091330794"></p>
+<p>之后一些工作是基于这篇论文改的，<strong>开源：</strong><a target="_blank" rel="noopener" href="https://paperswithcode.com/paper/dccrn-deep-complex-convolution-recurrent-1">https://paperswithcode.com/paper/dccrn-deep-complex-convolution-recurrent-1</a></p>
+<p>本文设计了一种<strong>模拟复数运算的网络结构</strong>，称为深度复卷积循环网络（DCCRN），其中 CNN 和 RNN 结构都可以处理复数运算。（<strong>2020 DNS Challenge 第一名</strong>）</p>
+<h2 id="网络结构-1"><a href="#网络结构-1" class="headerlink" title="网络结构"></a>网络结构</h2><p>卷积循环网络（CRN）是一种本质上因果的卷积编解码器架构，在编码器和解码器之间有两个 LSTM 层。</p>
+<p>LSTM 专门用于建模时间依赖关系。编码器由五个 Conv2D 块组成，旨在从输入特征中提取高级特征，或降维。编码器/解码器 Conv2D 块由卷积/反卷积层组成，然后是批量归一化和激活函数。</p>
+<p>随后，解码器将低维特征重构为输入的原始大小，从而使编解码器结构达到对称设计。</p>
+<p><strong>传统 CRN 只对幅度进行建模，未考虑相位</strong>。本文提出的 DCCRN- 在编码器/解码器中用<u>复值 CNN</u> 和<u>复值批量归一化层</u>对 CRN 进行了实质性修改，并考虑用<u>复值 LSTM</u> 代替传统的 LSTM。复值模块通过<strong>模拟复数乘法</strong>来建模幅值和相位之间的相关性。</p>
+<img src="https://s2.loli.net/2022/06/09/BezEyiadnFfWZwQ.png" alt="image-20220609092612892" style="zoom: 67%;" />
+
+<img src="https://s2.loli.net/2022/06/09/lXJy5aGKh8Tepmr.png" alt="image-20220609092653169" style="zoom: 67%;" />
+
+<p>复值编码器块包括复值 Conv2D、复值批量归一化和实值 PReLU。</p>
+<p>复值 Conv2D 由四个传统的 Conv2D 操作组成，它们控制整个编码器的复值信息流。复数卷积滤波器 W 定义为 $W=W_r+jW_i$，其中实值矩阵 $W_r$ 和 $W_i$ 分别表示复数卷积核的实部和虚部。同时，我们定义了输入复数矩阵 $X=X_r+jX_i$。因此，我们可以通过复卷积运算得到复数输出 Y：</p>
+<img src="https://s2.loli.net/2022/06/09/UW7g2EZbp4RAoeq.png" alt="image-20220609093326845" style="zoom:67%;" />
+
+<p>$F_{out}$ 表示一个复数层的输出特征。</p>
+<p>与复数卷积类似，给定复数输入 $X_r$ 和 $X_i$ 的实部和虚部，复数 LSTM 输出 $F_{out}$ 可以定义为：</p>
+<img src="https://s2.loli.net/2022/06/09/Rfvm4B1pbMzQkeq.png" alt="image-20220609093442936" style="zoom:67%;" />
+
+<p>其中，$LSTM_r$ 和 $LSTM_i$ 表示实部和虚部的两个传统 LSTM。</p>
+<h2 id="训练目标"><a href="#训练目标" class="headerlink" title="训练目标"></a>训练目标</h2><p>在训练时，DCCRN 估计 CRM（complex ratio mask），并通过信号近似（signal approximation，SA）进行优化。给定干净语音 S 和含噪语音 Y 的复数 STFT 谱，CRM 可以定义为：</p>
+<img src="https://s2.loli.net/2022/06/09/kb5VrYdJmhCiZRW.png" alt="image-20220609095312526" style="zoom:67%;" />
+
+<p>其中 $Y_r$ 和 $Y_i$ 分别表示带噪复值频谱的实部和虚部，干净复值频谱的实部和虚部由 $S_r$ 和 $S_i$ 表示。幅值目标 SMM（spectral magnitude mask）也可用于比较：$SMM=\frac{|S|}{|Y|}$，其中 $|S|$ 和 $|Y|$ 分别表示干净语音和带噪语音的幅值。</p>
+<p>我们采用信号近似，它直接将干净语音的幅度或复频谱与使用掩码的噪声语音的幅度或复频谱之间的差值最小化。SA 的损失函数变为 $CSA=Loss(\tilde M·Y,S)$，$MSA=Loss(|\tilde M|·|Y|,|S|)$。其中 CSA 和 MSA 分别表示基于 CRM 的 SA 和基于 SMM 的 SA。笛卡尔坐标表示的掩码 $\tilde M=\tilde M_r+j\tilde M_i$ 可以由极坐标表示：</p>
+<img src="https://s2.loli.net/2022/06/09/IBHOfj1yg2wduYq.png" alt="image-20220609100234530" style="zoom:67%;" />
+
+<p>对于 DCCRN，我们可以使用<u>三种复数乘法模式</u>。具体而言，估计的干净语音可计算如下：</p>
+<img src="https://s2.loli.net/2022/06/09/QjIDVRyh9LzoO2Z.png" alt="image-20220609100329803" style="zoom:67%;" />
+
+<p>DCCRN-C 以 CSA 的方式获得 $\tilde S$，DCCRN-R 分别估计 $\tilde Y$ 的实部和虚部的掩码，DCCRN-E 在极坐标中执行。</p>
+<h2 id="损失函数-1"><a href="#损失函数-1" class="headerlink" title="损失函数"></a>损失函数</h2><p>损失函数是 SI-SNR，它通常被用作替代均方误差（MSE）的评估指标。SI-SNR 定义为：</p>
+<img src="https://s2.loli.net/2022/06/09/mwj8csTQxLi3Ore.png" alt="image-20220609101604463" style="zoom:67%;" />
+
+<p>$s,\tilde s$ 分别为干净和估计的时域波形，$&lt;·,·&gt;$ 表示两个向量之间的点积，$||·||_2$ 为 L2 范数。</p>
+<h1 id="CAD-AEC-Context-Aware-Deep-Acoustic-Echo-Cancellation（2020-ICASSP）"><a href="#CAD-AEC-Context-Aware-Deep-Acoustic-Echo-Cancellation（2020-ICASSP）" class="headerlink" title="CAD-AEC: Context-Aware Deep Acoustic Echo Cancellation（2020 ICASSP）"></a>CAD-AEC: Context-Aware Deep Acoustic Echo Cancellation（2020 ICASSP）</h1><img src="https://s2.loli.net/2022/06/09/DfxtJuTFiMe5kBS.png" alt="image-20220609142253787" style="zoom:67%;" />
+
+<p>引入两个主要组件，提出了一种上下文感知的 AEC：</p>
+<ul>
+<li>自适应滤波</li>
+<li>在编解码器之间插入深度上下文注意力模块（CAM）</li>
+</ul>
+<h2 id="信号模型-6"><a href="#信号模型-6" class="headerlink" title="信号模型"></a>信号模型</h2><p>将时域信号 $v(t)$ 表示为 STFT 域的复值频谱 $V_{k,f}$，$k,f$ 分别为帧和频率索引，其相位表示为 $\angle V_{k,f}$，幅度表示为 $|V_{k,f}|$。设 $|V_k|$ 为在帧 k 和所有频率下的幅值向量，$|V|=[|V_{k-T}|,…,|V_k|]$。</p>
+<img src="https://s2.loli.net/2022/06/09/Yw3LT78uKXhmolf.png" alt="image-20220609145348687" style="zoom:67%;" />
+
+<p>麦克风信号由近端语音 $s(t)$ 和回声 $y(t)$ 组成，$d(t)=s(t)+y(t)$，$x(n)$ 为远端信号。AEC 的目标是消除远端信号产生的回声后，生成估计的近端信号 $\hat s(𝑡)$。</p>
+<h2 id="自适应滤波-1"><a href="#自适应滤波-1" class="headerlink" title="自适应滤波"></a>自适应滤波</h2><p>首先对麦克风和远端信号做 STFT，在频域中进行自适应滤波，使用归一化最小均方（NLMS）更新规则来估计每个频率单元的声音路径。然后计算麦克风与估计的回声信号之间的频谱误差。该结构利用频域 NLMS（FDNLMS）更新规则提取的自适应信息估计近端语音信号。</p>
+<p>我们计算 STFT 域中每个频率窗口的误差信号为：</p>
+<img src="https://s2.loli.net/2022/06/09/xIudyrpo3Ez7qVM.png" alt="image-20220609151003976" style="zoom:67%;" />
+
+<p>使用自适应 NLMS 更新 G：</p>
+<img src="https://s2.loli.net/2022/06/09/yPxfZDjGnUFquzW.png" alt="image-20220609151039583" style="zoom:67%;" />
+
+<p>其中步长 𝜇 由远端信号的平均功率 $P_{k,f}$ 进行归一化，并通过以下方式递归获得：</p>
+<img src="https://s2.loli.net/2022/06/09/dO82A9GNwYom4rL.png" alt="image-20220609151239067" style="zoom:67%;" />
+
+<p>𝛼 是介于 0 和 1 之间的遗忘因子。</p>
+<h2 id="上下文注意力模块"><a href="#上下文注意力模块" class="headerlink" title="上下文注意力模块"></a>上下文注意力模块</h2><img src="https://s2.loli.net/2022/06/09/QMqWp25dtDgHFJm.png" alt="image-20220609151349499" style="zoom:67%;" />
+
+<p>编码器的输入为 $log|X|,log|D|,log|E|$ 的拼接，并将其映射到 h：</p>
+<img src="https://s2.loli.net/2022/06/09/LUw12QBC3aXjFmd.png" alt="image-20220609151509906" style="zoom:67%;" />
+
+<p>编码器由一个具有指数线性单元（elu）激活的 GRU 层组成。然后，注意力机制利用编码器的超空间，关注超空间中的某个重要区域：</p>
+<img src="https://s2.loli.net/2022/06/09/B6U7sF3gxpWTiCm.png" alt="image-20220609151659143" style="zoom:67%;" />
+
+<p>如图 2（b）所示，注意力机制的第一层是多头自注意力（MHSA）层：</p>
+<img src="https://s2.loli.net/2022/06/09/5caClBPeSF1AKXb.png" alt="image-20220609151906280" style="zoom:67%;" />
+
+<p>第二层是多头注意力（MHA）层，其中该层的 query 是第一层的输出，key 和 value 是编码器的输出。</p>
+<p>最后，具有两层的 GRU 获取注意层的输出，以在对数频谱空间中生成近端信号的估计：</p>
+<img src="https://s2.loli.net/2022/06/09/YmoRf6UKIi2tJyT.png" alt="image-20220609152158379" style="zoom:67%;" />
+
+<p>对于损失函数，我们计算了近端语音的 ground-truth s 与估计的近端语音 $\hat s$ 之间的对数 STFT 特征域的平均绝对误差（MAE）。</p>
+<h1 id="U-Convolution-Based-Residual-Echo-Suppression-with-Multiple-Encoders（2021-ICASSP）"><a href="#U-Convolution-Based-Residual-Echo-Suppression-with-Multiple-Encoders（2021-ICASSP）" class="headerlink" title="U-Convolution Based Residual Echo Suppression with Multiple Encoders（2021 ICASSP）"></a>U-Convolution Based Residual Echo Suppression with Multiple Encoders（2021 ICASSP）</h1><img src="https://s2.loli.net/2022/06/07/wko6VTUSBfN8qAX.png" alt="image-20220607095740056" style="zoom: 67%;" />
+
+<p>端到端的神经网络，消除非线性回声，该模型采用多个编码器和一个集成块来利用 AEC 系统中的完整信号信息，并应用 U-convolution 块来有效分离近端语音。</p>
+<ul>
+<li><strong>生成掩码</strong>的方法</li>
+</ul>
+<h2 id="问题定义"><a href="#问题定义" class="headerlink" title="问题定义"></a>问题定义</h2><img src="https://s2.loli.net/2022/06/07/OiCXckqBQxjT9Jn.png" alt="image-20220607101501784" style="zoom:67%;" />
+
+<p>$x(t)$ 表示远端信号，$s(t),n(t)$ 分别表示近端语音和噪声，t 为时间。AEC 输出的信号 $e(t)$ 和麦克风信号 $y(t)$ 表示如下：<br>$$<br>y(t)=d(t)+s(t)+n(t) \<br>e(t)=(d(t)-\hat d(t))+s(t)+n(t)<br>$$<br>$d(t)$ 是回声信号，$\hat d(t)$ 是通过线性 AEC 产生的线性回声估计。</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><img src="https://s2.loli.net/2022/06/07/a2s8Tu9ZrFvK6ip.png" alt="image-20220607101627179" style="zoom:67%;" />
+
+<p>该模型由多个编码器、一个集成块、一个掩码估计网络和一个解码器组成。</p>
+<ul>
+<li>编码器对多个源执行一维卷积，以获得相应的潜在表示。</li>
+<li>然后，通过集成块来合并这些表示。</li>
+<li>掩码估计网络计算近端语音掩码，将其乘以其中一个源表示，以获得近端语音的潜在表示估计。</li>
+<li>解码器通过执行去卷积，将近端语音的估计潜在表示重建为波形 s(t)。</li>
+</ul>
+<p>对于训练目标，我们使用时域对数均方误差来代替通常用于音源分离的 Si-SDR 损失函数：<br>$$<br>L^{(T-LMSE)}(s(t),\hat s(t))=10\log\sum_t|s(t)-\hat s(t)|^2<br>$$</p>
+<h3 id="一维卷积编码器"><a href="#一维卷积编码器" class="headerlink" title="一维卷积编码器"></a>一维卷积编码器</h3><p>引入了多个编码器，以利用与回声抑制相关的多个源信号，包括：</p>
+<ol>
+<li>回声估计 $\hat d(t)$</li>
+<li>AEC 的输出 $e(t)$</li>
+<li>麦克风信号 $y(t)$</li>
+<li>参考信号 $x(t)$</li>
+</ol>
+<p>每个源信号通过相应的 <strong>1-D 卷积编码器</strong>独立变换潜在表示。</p>
+<h3 id="集成块"><a href="#集成块" class="headerlink" title="集成块"></a>集成块</h3><p>利用 <strong>DWS 卷积</strong>（depthwise separable convolution）来有效地捕获多个潜在表示之间的<strong>空间和输入相关性</strong>。</p>
+<p>我们首先将编码器生成的潜在表示沿新维度堆叠，然后使用通道执行 DWS 卷积，然后是 bottleneck 层和层归一化，如图 3(a) 所示。 对于所有块的层归一化，我们使用<strong>累积层归一化</strong>（cLN，cumulative LN）来满足因果处理。</p>
+<img src="https://s2.loli.net/2022/06/07/jyonhxZaB7SVlWG.png" alt="image-20220607103246438" style="zoom:80%;" />
+
+<h3 id="掩码估计网络"><a href="#掩码估计网络" class="headerlink" title="掩码估计网络"></a>掩码估计网络</h3><p>在 U-Convblock 中，可以使用<strong>下采样（DS）和上采样（US）块</strong>以多个分辨率提取时间信息，如图 3(b) 中所述。</p>
+<p>下采样（上采样）包括 Q 个下采样（上采样）块，每个块<u>将时间分辨率减半（加倍）</u>，同时使用 DWS 卷积保持特征数量。下采样流和上采样流之间存在<u>跳跃连接</u>，所有卷积层后面都是 ReLU。</p>
+<p>最后，将估计出的掩码与编码后的 AEC 输出表示进行元素相乘，然后采用<strong>反卷积</strong>来重建估计出的近端语音。</p>
+<h1 id="Acoustic-Echo-Cancellation-with-Cross-Domain-Learning（2021-InterSpeech）"><a href="#Acoustic-Echo-Cancellation-with-Cross-Domain-Learning（2021-InterSpeech）" class="headerlink" title="Acoustic Echo Cancellation with Cross-Domain Learning（2021 InterSpeech）"></a>Acoustic Echo Cancellation with Cross-Domain Learning（2021 InterSpeech）</h1><p><img src="https://s2.loli.net/2022/06/07/ILRp1zKyMCkhZQv.png" alt="image-20220607110119314"></p>
+<p><strong>开源：</strong><a target="_blank" rel="noopener" href="https://github.com/rrbluke/CDEC">https://github.com/rrbluke/CDEC</a></p>
+<p>该算法由三个模块组成：时延补偿（TDC）模块，基于块的频域回声消除（AEC），以及用作后处理的时域神经网络（TD-NN）。</p>
+<ul>
+<li><strong>生成掩码的方法</strong>，类似与估计增益</li>
+</ul>
+<h2 id="问题定义-1"><a href="#问题定义-1" class="headerlink" title="问题定义"></a>问题定义</h2><p>远端信号 $x(t)$，近端信号 $d(t)=x(t-\Delta t)\otimes h(t)+s(t)+n(t)+v(t)$，$h(t)$ 表示近端扬声器和近端麦克风之间的回声脉冲响应，$s(t)$ 为近端语音信号，$n(t)$ 为噪声，$v(t)$ 为残余回声，$\Delta t$ 为远端信号的延迟。</p>
+<img src="https://s2.loli.net/2022/06/07/XypSVH7uTnJ4tko.png" alt="image-20220607112436384" style="zoom:80%;" />
+
+<h2 id="TDC-模块"><a href="#TDC-模块" class="headerlink" title="TDC 模块"></a>TDC 模块</h2><p>使用 <strong>GCC-PHAT 算法</strong>在频域中比较远端信号 $x(t)$ 和近端信号 $d(t)$，即评估互相关 $\Phi(l,k)$：<br>$$<br>\Phi(l,k)=\alpha\Phi(l,k)+(1-\alpha)X(l,k)D(l,k)^*<br>$$<br>$X(l,k)$ 和 $D(l,k)$ 分别表示信号 $x(t)$ 和 $d(t)$ 的频域表示。帧用 $l$ 表示，频率单元（frequency bin）用 $k$ 表示。平滑常数 $α$ 决定了精度和对时延 $∆t$ 的突变的反应时间之间的权衡、 该时延由以下公式估计：<br>$$<br>\Delta t=\arg\max_{t}\mathcal F^{-1}\frac{\Phi(l)}{|\Phi(l)|}<br>$$<br>其中 $\mathcal F^{-1}$ 表示逆 FFT，$\Phi(l)=[\Phi(l,1),…,\Phi(l,K)]^T$，$K$ 是频率单元的数量。</p>
+<h2 id="AEC-模块"><a href="#AEC-模块" class="headerlink" title="AEC 模块"></a>AEC 模块</h2><p>采用频域状态空间分块 AEC 算法（frequency-domain state-space block-partitioned AEC），该算法分别操作近端扬声器和麦克风信号 $x′(l)$ 和 $d′(l)$ 块。每个块使用各自时域信号的最近 2T 个样本：<br>$$<br>x’(l)=x(t+n-2T) \<br>d’(l)=d(t+n-2T), n\in{0,…,2T-1}<br>$$<br>AEC 将可能非常长的回声划分为 P 个分区：</p>
+<img src="https://s2.loli.net/2022/06/07/fQ6mBUbpPWqEJzn.png" alt="image-20220607134807402" style="zoom:67%;" />
+
+<p>其中，$W(p,k)$ 表示滤波器权重的第 p 块。时域块 $e′(l)$ 表示第 $l$ 个帧的剩余信号。仅使用最近的 T 个样本来重构时域剩余信号 $e(T)$，即 $e(t+n-T)=e’(l,n+T),n\in{0,…,T-1}$。</p>
+<p>为了避免滤波器权重中的<strong>混叠</strong>，对时域权重的每个块的最近 T 个样本进行零填充：</p>
+<img src="https://s2.loli.net/2022/06/07/CTFvW5bVnL8Uiz4.png" alt="image-20220607140419415" style="zoom:67%;" />
+
+<p>$n\in{0,…,T-1}$。为了解释音量变化或近端说话人突然移动引起的回声脉冲响应变化，我们使用第二组滤波器权重 $\hat W(p,k)$ 作为阴影权重（shadow weights）。算法 1 说明了如何更新这些权重。</p>
+<img src="https://s2.loli.net/2022/06/07/ueRV64JjGyn9Ovk.png" alt="image-20220607140658151" style="zoom:67%;" />
+
+<p>阴影权重根据 ERLE $\mathcal E(l)$ 更新：</p>
+<img src="https://s2.loli.net/2022/06/07/BG5Qqjc6lLYaXnb.png" alt="image-20220607140823597" style="zoom:67%;" />
+
+<p>$D(l,k)$、$E(l,k)$ 和 $\hat E(l,k)$ 分别是 $d′(l)$、$e′(l)$ 和 $\hat e′(l)$ 的 FFT。块 $\hat e′(l)$ 通过将阴影权重 $\hat W(p,k)$ 插入等式 5 中获得。算法 1 中的更新规则确保每个帧使用 ERLE 最大的权重。</p>
+<h2 id="TD-NN-模块"><a href="#TD-NN-模块" class="headerlink" title="TD-NN 模块"></a>TD-NN 模块</h2><img src="https://s2.loli.net/2022/06/07/Bjb8SEfCW5DAYGe.png" alt="image-20220607141301633" style="zoom:80%;" />
+
+<p>与 AEC 类似，它对 T 个块进行操作。如图 2，上面的分支在潜在空间中<strong>生成掩码</strong> $m(l)$。</p>
+<p>掩码估计分支使用核大小为 F=1600、步长为 S=128 的 Conv1D 层，将四个信号 $x(t)、y(t)、d(t)、e(t)$ 转换为每个信号具有 H 个维度的潜在表示。Conv1D 层使用了各自信号的过去 1600 个样本，<u>即它看到了过去 100ms 音频数据的上下文</u>。</p>
+<p>每个信号都通过<strong>即时层标准化</strong>单独标准化，以考虑各个电平变化。该分支中的最后一个前馈（FF）层使用 softplus 激活。</p>
+<p>图 2 中下面的分支说明了掩码对潜在空间中的剩余信号 $e(t)$ 的应用。Conv1D 层使用核大小 F=256 和步长 S=128 来生成 H=200 维度的潜在空间。掩码 $m(l)$ 乘以 GRU 层的输出获得的潜在表示。</p>
+<p>最后，使用 Conv1DTranspose 层预测增强的时域输出 $z(t)$。它使用与 Conv1D 层相同的参数，即 F=256，S=128。</p>
+<h2 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h2><p>使用 AEC Challenge 的数据集进行训练。</p>
+<p>在训练期间，首先使用 GCC-PHAT 每 10s 估计一次批量延迟，即每次训练话语一次。接下来执行 AEC，输出回声模型 $y(t)$ 和剩余信号 $e(t)$。</p>
+<p>之后，使用四个信号 $x(t)、y(t)、d(t)、e(t)$ 作为特征向量，并使用所需信号 $s(t)$ 作为目标向量。对于近端单讲（NE）和双讲（DT）场景，我们使用 SDR 作为成本函数：</p>
+<img src="https://s2.loli.net/2022/06/07/3FpEvgbSjNCuV9n.png" alt="image-20220607143931064" style="zoom:67%;" />
+
+<p>使用 ERLE 作为远端单讲（FE）场景的成本函数：</p>
+<img src="https://s2.loli.net/2022/06/07/I5Xe29wOTulavtk.png" alt="image-20220607144019594" style="zoom:67%;" />
+
+<p>总成本函数为，设 λ=0.5：<br>$$<br>\mathcal L_{ERLE}=-\mathcal L_{SDR}-\lambda\mathcal L_{ERLE}<br>$$</p>
+<h1 id="Combining-Adaptive-Filtering-And-Complex-Valued-Deep-Postfiltering-For-Acoustic-Echo-Cancellation（2021-ICASSP）"><a href="#Combining-Adaptive-Filtering-And-Complex-Valued-Deep-Postfiltering-For-Acoustic-Echo-Cancellation（2021-ICASSP）" class="headerlink" title="Combining Adaptive Filtering And Complex-Valued Deep Postfiltering For Acoustic Echo Cancellation（2021 ICASSP）"></a>Combining Adaptive Filtering And Complex-Valued Deep Postfiltering For Acoustic Echo Cancellation（2021 ICASSP）</h1><p><img src="https://s2.loli.net/2022/06/07/rpmis6b2EJvM7CY.png" alt="image-20220607144859370"></p>
+<p><strong>开源：</strong><a target="_blank" rel="noopener" href="https://github.com/LMSAudio/Complex_PF">https://github.com/LMSAudio/Complex_PF</a></p>
+<p>介绍了一种利用复值深度神经网络进行后滤波的抗噪声回声抵消方法。使用<strong>双讲自适应滤波器</strong>去除早期线性回声分量，残差信号随后由所提出的<strong>后滤波器</strong>（PF）进行处理。</p>
+<ul>
+<li><strong>生成掩码</strong>的方法</li>
+</ul>
+<h2 id="问题定义-2"><a href="#问题定义-2" class="headerlink" title="问题定义"></a>问题定义</h2><img src="https://s2.loli.net/2022/06/07/YtH7mAbhUkqfQwd.png" alt="image-20220607145751757" style="zoom: 67%;" />
+
+<p><strong>所有频域量均加下划线，以将其与时域对应量区分开来。</strong></p>
+<p>将采样索引 k 处的离散时域话筒信号 $y_k$ 建模为回声信号 $d_k$、近端语音 $s_k$、背景噪声 $n_k$ 和时延 $y_{bias,k}$ 的线性叠加：</p>
+<img src="https://s2.loli.net/2022/06/07/7ay1Y32FPl9d4Ks.png" alt="image-20220607150045656" style="zoom:80%;" />
+
+<p>回声信号 $d_k$ 由线性和非线性分量 $d_{lin,k},d_{nl,k}$ 组成：</p>
+<img src="https://s2.loli.net/2022/06/07/6jn4aNZO5UsQkGK.png" alt="image-20220607150154906" style="zoom: 80%;" />
+
+<p>线性分量由远端信号 $x_k$ 和 FIR 滤波器 $h_k$ 的线性卷积建模。为了计算效率，所提出的模型联合处理包含 R 个样本的块：</p>
+<img src="https://s2.loli.net/2022/06/07/8eJgYBQp5FuVRd1.png" alt="image-20220607150731557" style="zoom:80%;" />
+
+<p>向量 $y_{\tau}=(y_{\tau R-R+1},…,y_{\tau R})^T$ 表示麦克风信号的长为 R 的块。</p>
+<p>为了从麦克风信号中移除时延分量 $y_{bias,k}$，预处理块从 $y_k$ 中减去移动平均时延估计值 $\hat y_{bias,k}$，其根据先前 $L_{br}$ 个样本的算术平均值获得。在下文中，式（3）中的所有其他信号量以类似方式定义，<strong>其各自减少了时延的对应量用 $()_{br}$ 表示。</strong></p>
+<h2 id="线性自适应滤波"><a href="#线性自适应滤波" class="headerlink" title="线性自适应滤波"></a>线性自适应滤波</h2><p>线性滤波器旨在消除线性回声分量 $d_{lin,k}$ 中的早期反射 $d_{early,k}$，通过从麦克风信号 $y_{br,\tau}$ 中减去回声估计 $\hat d_{\tau}$，即 $e_{lf,\tau}=y_{br,\tau}-\hat d_{\tau}$。</p>
+<p>由于计算效率和低算法延迟，我们使用<strong>离散傅立叶变换（DFT）域分区块卷积模型</strong>作为线性回声估计器：</p>
+<img src="https://s2.loli.net/2022/06/07/SgjtMr4Dw9VZiab.png" alt="image-20220607151812237" style="zoom:80%;" />
+
+<p>其中 $\underline{\hat h}<em>{b,\tau-1}\in\mathbb C^M$ 为第 b 分块的 DFT 域自适应滤波器向量，$\underline X</em>{\tau}$ 为 DFT 域的远端信号矩阵。后者由 $\underline X_\tau=diag(F_Mx_\tau)\in\mathbb C^{M\times M}$ 计算，$x_\tau=(x_{\tau R-M+1},…,x_{\tau R})^T\in\mathbb R^M$ 为各自的时域远端信号块，$F_M$ 为 M 维 DFT 矩阵，diag 为对角化算子。此外，约束矩阵 $Q^T_1=(0_{R\times M-R} I_R)$，$I_R$ 和 $0_{R\times S}$ 分别表示单位矩阵和零矩阵。</p>
+<p>由于其双讲自适应性能，自适应滤波器将 $\underline{\hat h}_{b,\tau-1}$ 划分为 $b=0,…,B-1$，由<strong>对角化分块卡尔曼滤波器</strong>（PBKF）的梯度约束版更新。</p>
+<p>$y_{br,\tau}$ 被用作噪声观测，对噪声鲁棒的卡尔曼滤波器的自适应取决于观测噪声协方差矩阵 $\underline\Psi^{SS}<em>\tau=\mathbb E[\underline{\tilde n_\tau},\underline{\tilde n_\tau^*}]$，$\mathbb E[·]$ 为期望算子。它表示 DFT 域信号向量的协方差矩阵 $\underline{\tilde n_\tau}=F_MQ^T_1(y</em>{br,\tau}-d_{early,\tau})$ 包括所有不能用线性自适应滤波器模型解释的信号分量。通过假设频谱的不相关，观测噪声协方差矩阵 $\underline\Psi^{SS}_\tau$ 被建模为对角矩阵，从而允许高效的计算。</p>
+<p>为了<strong>对观测噪声进行建模</strong>，我们使用了期望最大化（EM）启发的优化方案，其中卡尔曼滤波器更新作为 E 步，观测和过程噪声协方差矩阵的估计表示 M 步。我们建议同时估计观测噪声协方差矩阵 $\underline\Psi^{SS}<em>\tau$ 和第 b 块的过程噪声协方差矩阵 $\underline\Psi^{\Delta\Delta}</em>{b,\tau}$：</p>
+<img src="https://s2.loli.net/2022/06/07/CnZHqM1VwmUu25k.png" alt="image-20220607155123973" style="zoom:80%;" />
+
+<p>$\mathbb{\hat E[·]}$ 表示 recursive averaging，后验误差计算为 $\underline e_{post,\tau}=\underline y_{br,\tau}-\sum^{B-1}<em>{b=0}C</em>{\tau-b}\underline h_{b,\tau}$，$C_{\tau,b}=F_MQ_1Q^T_1F_M^{-1}\underline X_{\tau-b}$ 为 overlap-save 约束的远端信号块，</p>
+<h2 id="后滤波的复值-DNN"><a href="#后滤波的复值-DNN" class="headerlink" title="后滤波的复值 DNN"></a>后滤波的复值 DNN</h2><p><img src="https://s2.loli.net/2022/06/07/nOYvdZXuJsQB7xP.png" alt="image-20220607160021527"></p>
+<p>网络架构如图 2 所示，它包括一个<strong>复值自编码器</strong>。为了使网络能够对输入帧时间范围以外的时间依赖进行建模，我们在编码器和解码器之间引入了一个由 $\mathbb C$GRU 表示的<strong>复值 GRU</strong> 和一个由 $\mathbb C$FC 表示的<strong>复值全连接层</strong>。</p>
+<p>编码器和解码器均由四个复值模块组成，构成一个复值的二维卷积层，然后是一个复值批量归一化和一个复值 ReLU。编码后的 $\mathbb C$GRU 包括两个传统实值 GRU，分别表示 $GRU_r$ 和 $GRU_i$。对于复输入 $z=a+ib$，$\mathbb  C$GRU 的输出计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/I3geSHJKdhMpx5G.png" alt="image-20220607161241760" style="zoom:67%;" />
+
+<p>网络的输入有两个部分，远端信号 $x_k$ 的两个加窗短时傅立叶变换（STFT）帧作为第一个输入 $\underline X_\tau=[x_\tau,x_{\tau-1}]$，剩余信号的两个 STFT 帧作为第二个输入 $\underline E_{lf,\tau}=[\underline e_{lf,\tau},\underline e_{lf,\tau-1}]$。对于每个时频单元 $(τ,f)$，网络输出未处理的复值掩码 $O_{τ,f}$。然后对该掩码进行处理以获得有界复数掩码 $\hat M_{\mathbb C}$，$\hat M_{\mathbb C,\tau,f}=|\hat M_{\mathbb C},\tau,f|e^{i\theta_{\tau,f}}$ 计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/Z5cLysrIB2ph6dJ.png" alt="image-20220607162444830" style="zoom:80%;" />
+
+<p>利用复值掩码 $\hat M_{\mathbb C}$，通过以下方法获得 STFT 域近端语音信号的估计，$\odot$ 表示哈达玛积：</p>
+<img src="https://s2.loli.net/2022/06/07/IvT3OfWjugPAm54.png" alt="image-20220607162600698" style="zoom:80%;" />
+
+<h2 id="训练目标和损失函数"><a href="#训练目标和损失函数" class="headerlink" title="训练目标和损失函数"></a>训练目标和损失函数</h2><p>损失函数采用加权信号失真比（SDR）损失的块变体：</p>
+<img src="https://s2.loli.net/2022/06/07/swhno6VfT1zxUdj.png" alt="image-20220607162900513" style="zoom:80%;" />
+
+<p>$||·||$ 表示欧几里得范数，$\hat s_\tau$ 表示通过估计值 $\hat S_τ$ 的逆短时傅立叶变换（ISTFT）获得的近端语音信号的时域估计值，而 $α_τ$ 表示能量比：</p>
+<img src="https://s2.loli.net/2022/06/07/8k6Nb9zFuHJdoyC.png" alt="image-20220607163054624" style="zoom:80%;" />
+
+<p>$n_\tau=e_{lf,\tau}-s_\tau$，$\hat n_\tau=e_{lf,\tau}-\hat s_\tau$。</p>
+<h1 id="Residual-Echo-and-Noise-Cancellation-with-Feature-Attention-Module-and-Multi-domain-Loss-Function（2021-InterSpeech）"><a href="#Residual-Echo-and-Noise-Cancellation-with-Feature-Attention-Module-and-Multi-domain-Loss-Function（2021-InterSpeech）" class="headerlink" title="Residual Echo and Noise Cancellation with Feature Attention Module and Multi-domain Loss Function（2021 InterSpeech）"></a>Residual Echo and Noise Cancellation with Feature Attention Module and Multi-domain Loss Function（2021 InterSpeech）</h1><p><img src="https://s2.loli.net/2022/06/07/QxHthsAo9qkdweO.png" alt="image-20220607163831815"></p>
+<p>提出了基于深度学习的模型 <strong>RENC</strong>，通过估计用于从线性自适应滤波器（LAF）的输出信号恢复近端干净语音的增益函数。</p>
+<p>为了使模型根据上下文关注不同的特征，设计了<strong>特征注意模块</strong>，为从远端信号和估计的回声中提取的输入特征生成时频权重。</p>
+<p>进一步提出了<strong>scale-independent 均方误差</strong>（SI-MSE），用于训练 RENC 模型，其中 SI-MSE 损失克服了标准均方误差损失的缺点，可以进一步显著改善语音感知质量。</p>
+<ul>
+<li><strong>估计增益</strong>的方法</li>
+</ul>
+<h2 id="问题定义-3"><a href="#问题定义-3" class="headerlink" title="问题定义"></a>问题定义</h2><img src="https://s2.loli.net/2022/06/07/pNEJQO7zq89yjKX.png" alt="image-20220607165539113" style="zoom:67%;" />
+
+<p>近端麦克风信号 $y(n)$ 是近端语音 $s(n)$、回声 $d(n)$ 和背景噪声 $v(n)$ 的混合，$y(n)=s(n)+d(n)+v(n)$，其中，通过将扬声器输出信号与房间脉冲响应（RIR）$h(n)$ 进行卷积来产生回声 $d(n)$。AEC 系统的目标是利用 $y(n)$ 和 $x(n)$ 的先验知识恢复近端语音 $s(n)$。</p>
+<p>为了去除回声信号，通常采用基于 LAF 的方法，在时频域内利用信号 $y(n)$ 和 $x(n)$ 自适应估计回声路径。然后，可以计算估计的线性回声信号 $C(k,f)$，并从 $Y(k,f)$ 中除去，以获得 LAF 的输出 $E(k,f)=Y(k,f)-C(k,f)$。</p>
+<p>$Y(k,f)$ 表示 $y(n)$ 的 STFT 谱图，k 和 f 分别表示帧和频率窗口索引。</p>
+<h2 id="模型架构-2"><a href="#模型架构-2" class="headerlink" title="模型架构"></a>模型架构</h2><img src="https://s2.loli.net/2022/06/07/gLtaGWPZC34eRhn.png" alt="image-20220607170446145" style="zoom: 75%;" />
+
+<p>如图 2 的所示，输入特征首先由特征注意模块加权，然后再馈入 DNN，DNN 由两个堆叠的 GRU 层和一个 sigmoid 激活的全连接层组成。然后，DNN 利用加权特征估计 LAF 输出的振幅谱增益函数 $G(k,f)$，以恢复近端语音的估计谱，其可以描述为：</p>
+<img src="https://s2.loli.net/2022/06/07/OuqetKGDpsgxrzn.png" alt="image-20220607170711744" style="zoom:67%;" />
+
+<h2 id="特征注意模块"><a href="#特征注意模块" class="headerlink" title="特征注意模块"></a>特征注意模块</h2><p>RENC 模型利用多个输入信号，包括 LAF 的输出 $E(k,f)$、估计的线性回声 $C(k,f)$ 和远端参考信号 $X(k,f)$。以前基于 DNN 的 RES 方法通常<u>将这些信号直接串联为输入特征，很少注意它们之间的差异</u>。</p>
+<p>虽然需要 $E(k,f)$ 不断恢复近端目标，但 $X(k,f)$ 和 $C(k,f)$ <u>对残余回声抑制很重要，但对噪声消除无效</u>。也就是说，$X(k,f)$ 和 $C(k,f)$ 的<strong>重要性取决于它们与残余干扰的相关性</strong>。因此，我们提出了一个特征注意模块来<u>确定 $X(k,f)$ 和 $C(k,f)$ 的权重。</u></p>
+<p>输入特征 $Z_x(k,f)、Z_c(k,f)、Z_e(k,f)$ 通过对数功率运算从相应的信号 $X(k,f)$、$C(k,f)$ 和 $E(k,f)$ 计算出来，并通过在线频率相关归一化（online frequency-dependent normalization）。</p>
+<p>如图 2，$Z_x(k,f)、Z_c(k,f)$ 的注意权重 $α(k,f)$ 和 $β(k,f)$ 是通过它们与 $Z_e(k,f)$ 的组合来估计的。然后，注意力加权特征 $Z^{att}_x(k,f)$ 和 $Z^{att}_c(k,f)$ 计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/zajCxtUQMXP7hed.png" alt="image-20220607171830776" style="zoom: 80%;" />
+
+<p>最后，通过将 $Z^{att}_x(k,f)$、$Z^{att}_c(k,f)$ 和 $Z_e(k,f)$ 沿频率维度连接在一起，获得 DNN 的输入特征。</p>
+<h2 id="损失函数-2"><a href="#损失函数-2" class="headerlink" title="损失函数"></a>损失函数</h2><p>在模型训练过程中，目标与估计振幅谱之间的均方误差被广泛用作损失函数，其计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/2CVpuYIZ5XgetGO.png" alt="image-20220607172700521" style="zoom:80%;" />
+
+<p>$E{}$ 表示所有时频分量的平均值，$|·|$ 表示绝对值运算。</p>
+<p>然而，这种 MSE 损失函数<strong>有两个缺点</strong>：</p>
+<ul>
+<li>首先，MSE 值可能会<u>受到训练样本能量水平的影响</u>。能量大的训练样本往往会优先进行优化，因为对这些样本的优化会带来更明显的损失下降。相反，能量较小的样品不能很好地进行优化，因为它会使最终损失略有减少。</li>
+<li>其次，虽然经过全局能量缩放后，感知结果没有什么不同，<u>但它可能会受到估计谱和目标谱的不同能量水平的影响。</u></li>
+</ul>
+<p>因此，我们提出了振幅谱上的 SI-MSE 损失函数，其计算如下：</p>
+<img src="https://s2.loli.net/2022/06/07/pwUoVNMbxhI1cP8.png" alt="image-20220607172951093" style="zoom:67%;" />
+
+<p>为了进一步提高估计语音的感知质量，我们还采用了**感知损失函数 $L_{PESQ}$ **来训练 RENC 模型。感知损失函数为简化的 PESQ 算法，该算法同时具有增益和频率均衡，适用于基于梯度的训练。最后，得到混合损失函数：</p>
+<img src="https://s2.loli.net/2022/06/07/x5KJbcthnDYWAfo.png" alt="image-20220607173228291" style="zoom:80%;" />
+
+<p>参数 $λ=50$ 用于平衡损失函数的值。</p>
+<h1 id="Y2-Net-FCRN-for-Acoustic-Echo-and-Noise-Suppression（2021-InterSpeech）"><a href="#Y2-Net-FCRN-for-Acoustic-Echo-and-Noise-Suppression（2021-InterSpeech）" class="headerlink" title="Y2-Net FCRN for Acoustic Echo and Noise Suppression（2021 InterSpeech）"></a>Y2-Net FCRN for Acoustic Echo and Noise Suppression（2021 InterSpeech）</h1><img src="https://s2.loli.net/2022/06/09/M2mbRoyJpQFeS9C.png" alt="image-20220609112251433" style="zoom:67%;" />
+
+<p>基于 FCRN（fully convolutional recurrent network）的联合噪声和回声抑制的方法。提出了一个两阶段模型 $Y^2$-Net，它由两个 FCRN 组成，每个 FCRN 有两个输入和一个输出：</p>
+<ul>
+<li>第一阶段（AEC）生成回声估计</li>
+<li>第二阶段进一步使用它来执行噪声抑制</li>
+</ul>
+<h2 id="模型架构-3"><a href="#模型架构-3" class="headerlink" title="模型架构"></a>模型架构</h2><p>远端参考信号 $x(n)$，麦克风信号 $y(n)=s(n)+d(n)+n(n)$，分别为近端语音、回声和噪声。</p>
+<img src="https://s2.loli.net/2022/06/09/nF9LqNu3IRbdU18.png" alt="image-20220609133948776" style="zoom:67%;" />
+
+<p>如图 1，网络在 DFT 域运行，频域表示 $X_l(k)$ 和 $Y_l(k)$，$l,k$ 分别为帧索引和频率窗口，之后输入到模型第一阶段（Y-Net AEC），该阶段旨在生成回声估计 $\hat D_l(k)$。从 $Y_l(k)$ 中减去 $\hat D_l(k)$，获得去回声的语音 $E_l(k)$。</p>
+<p>第二阶段的 Y-Net PF 根据输入的 $E_l(k)$ 和 $\hat D_l(k)$ 计算复数值的掩码 $M_l(k)$，以实现噪声抑制。之后采用掩模振幅压缩并将其结果乘以 $E_l(k)$ 得到降噪的语音：</p>
+<img src="https://s2.loli.net/2022/06/09/OTeyLAakwGHr5SX.png" alt="image-20220609134918089" style="zoom:67%;" />
+
+<p>最后使用 IDFT 和重叠相加法将其转换为时域，得到最终估计信号 $\hat s(n)$。</p>
+<img src="https://s2.loli.net/2022/06/09/P8ahJjOErQMyAeG.png" alt="image-20220609135203947" style="zoom:67%;" />
+
+<p>Y-Net FCRN 的架构如图 2，$Conv(N\times 1,2F)_{/2}$ 表示该层使用 2F 个大小为 $N\times 1$ 的卷积核，在特征维度的步长设置为 2。所有卷积层和反卷积层都使用 leaky ReLU 激活函数。</p>
+<p>编码器和解码器之间的 ConvLSTM 具有 F 个卷积核，tanh 为激活函数。</p>
+<h2 id="损失函数-3"><a href="#损失函数-3" class="headerlink" title="损失函数"></a>损失函数</h2><p>两个阶段使用两个不同的损失函数：</p>
+<img src="https://s2.loli.net/2022/06/09/hQWS7Hn9KjIcuGf.png" alt="image-20220609140625971" style="zoom:67%;" />
+
+<p>分两步训练：</p>
+<ul>
+<li>使用式（2）对 Y-Net AEC 进行预训练</li>
+<li>将 Y-Net AEC 和 Y-Net PF 与 Y-Net AEC 的预训练权重和加权损失函数一起联合训练</li>
+</ul>
+<img src="https://s2.loli.net/2022/06/09/Vxpe6IniDCH3NS1.png" alt="image-20220609140934414" style="zoom:67%;" />
+
+<h1 id="Deep-Adaptive-AEC-Hybrid-of-Deep-Learning-and-Adaptive-Acoustic-Echo-Cancellation（2022-ICASSP）"><a href="#Deep-Adaptive-AEC-Hybrid-of-Deep-Learning-and-Adaptive-Acoustic-Echo-Cancellation（2022-ICASSP）" class="headerlink" title="Deep Adaptive AEC: Hybrid of Deep Learning and Adaptive Acoustic Echo Cancellation（2022 ICASSP）"></a>Deep Adaptive AEC: Hybrid of Deep Learning and Adaptive Acoustic Echo Cancellation（2022 ICASSP）</h1><p><img src="https://s2.loli.net/2022/06/08/PFu4LytzUnr7Nh1.png" alt="image-20220608085626188"></p>
+<p>线性自适应 AEC + DNN，训练 DNN 进行步长参数和参考信号估计，然后自适应 AEC 使用这些估计来消除回声。</p>
+<p>自适应 AEC 算法被实现为一个<strong>没有可训练参数的可微层</strong>，因此梯度可以在训练过程中通过它来更新 DNN 参数。</p>
+<ul>
+<li><strong>先过 DNN，再过线性 AEC</strong></li>
+</ul>
+<h2 id="问题定义-4"><a href="#问题定义-4" class="headerlink" title="问题定义"></a>问题定义</h2><p>麦克风信号是回声、近端语音和背景噪声的混合，其频域表示如下：</p>
+<img src="https://s2.loli.net/2022/06/08/eHR8Cv543W1qN6D.png" alt="image-20220608091507928" style="zoom:80%;" />
+
+<p>$Y,D,S,N$ 分别表示麦克风信号、回声、近端语音和噪声的 STFT，k 为帧索引，m 为频率索引。</p>
+<img src="https://s2.loli.net/2022/06/08/APT9ge62uwyBIzn.png" alt="image-20220608092035807" style="zoom:80%;" />
+
+<p>$\hat W_{k,m}=[\hat W_{k,m},…,\hat W_{k-L+1,m}]$ 为估计的回声路径，表示为长度为 L 的滤波器，$\hat D_{k,m}$ 为估计的回声，$E_{k,m}$ 为系统输出的信号，$X_{k,m}$ 为远端信号，$\mu_{k,m}$ 为步长，上标 H 表示共轭转置。</p>
+<h2 id="DNN-模块"><a href="#DNN-模块" class="headerlink" title="DNN 模块"></a>DNN 模块</h2><img src="https://s2.loli.net/2022/06/08/qPT3tCp5KkJgLbi.png" alt="image-20220608092529255" style="zoom:80%;" />
+
+<p>DNN 模块将麦克风和远端信号作为输入，以估计步长 $μ_{k,m}$ 和参考信号 $X′_{k,m}$：</p>
+<img src="https://s2.loli.net/2022/06/08/k65ejrYqM7C1cht.png" alt="image-20220608092736367" style="zoom:80%;" />
+
+<p>其中，$f(·)$ 和 $g(·)$ 分别表示 DNN 学习的用于估计 $μ_{k,m}$ 和 $X′_{k,m}$ 的<strong>非线性变换</strong>函数。</p>
+<img src="https://s2.loli.net/2022/06/08/YtnRbZMG5aWeLAz.png" alt="image-20220608092953671" style="zoom:80%;" />
+
+<p>我们使用 LSTM 实现 DNN 模块，如图 2 所示。LSTM 有四个隐藏层，每层 300 个单元。训练它从输入特征估计两个输出，步长 $μ_{k,m}$ 和频谱幅度掩码 $M_{k,m}$。$μ_{k,m}$和 $M_{k,m}$ 的值范围均为 [0，1]，sigmoid 用作输出层的激活函数。$X′_{k,m}$ 的估计谱由下式计算：</p>
+<img src="https://s2.loli.net/2022/06/08/9BQWCXtgojkyers.png" alt="image-20220608093146742" style="zoom:80%;" />
+
+<p>$|Y_{k,m}|$ 和 $\theta_{Y_{k,m}}$ 分别表示 $Y_{k,m}$ 的振幅谱和相位，$·$ 表示逐点乘法，j 为虚部单位。</p>
+<h2 id="线性-AEC"><a href="#线性-AEC" class="headerlink" title="线性 AEC"></a>线性 AEC</h2><p>使用频域 NLMS 作为线性 AEC 模块，并将等式（2）和（3）中的步长和参考信号替换为估计的 $μ_{k,m}$ 和 $X′_{k,m}$。</p>
+<p>由于线性 AEC 模块被实现为一个没有可训练参数的可微分层，梯度可以通过它来训练 DNN 参数。</p>
+<p>该方法中的线性 AEC 用于估计<strong>已估计的非线性参考信号和回声信号之间的转移函数</strong>，而不是估计真实的回声路径。</p>
+<h2 id="损失函数-4"><a href="#损失函数-4" class="headerlink" title="损失函数"></a>损失函数</h2><p>模型训练的损失函数计算为 $E_{k,m}$ 和目标信号 $T_{k,m}$ 之间的均方误差（MSE）：</p>
+<img src="https://s2.loli.net/2022/06/08/6WDnOEFTPIB8L7v.png" alt="image-20220608094343087" style="zoom:80%;" />
+
+<p>该方法可以通过使用不同的目标信号训练为<strong>仅去除回声或联合消除回声和噪声</strong>：</p>
+<ul>
+<li>$T_{k,m}=S_{k,m}+N_{k,m}$：使用该目标信号训练的模型侧重于在不降低噪声（NR）的情况下去除回声，估计的 $\hat D_{k,m}$ 近似回声信号。</li>
+<li>$T_{k,m}=S_{k,m}$：以这种方式训练的模型可以实现联合回声和噪声消除。在这种情况下，估计的参考信号 $X′_{k,m}$ 包含噪声信息，相应的 $\hat D_{k,m}$ 近似于回声和背景噪声的混合。因此，<u>最终输出是近端语音的估计值</u>，同时从麦克风信号中去除回声和噪声。</li>
+</ul>
+<p>对于 $μ_{k,m}$ 和 $X′_{k,m}$ ，我们<strong>没有直接指导模型训练的 ground-truth</strong>。为了确保所提方法的有效性，线性 AEC 模块必须使用 DNN 模块的输出作为步长和参考信号，以最小化训练期间的误差信号。</p>
+<p>在推理阶段，<u>DNN 的参数固定</u>，而线性 AEC 使用估计的步长和参考信号<u>自适应更新其滤波器系数</u>。</p>
+<h1 id="NN3A-Neural-Network-supported-Acoustic-Echo-Cancellation-Noise-Suppression-and-Automatic-Gain-Control-for-Real-Time-Communications（2022-ICASSP）"><a href="#NN3A-Neural-Network-supported-Acoustic-Echo-Cancellation-Noise-Suppression-and-Automatic-Gain-Control-for-Real-Time-Communications（2022-ICASSP）" class="headerlink" title="NN3A: Neural Network supported Acoustic Echo Cancellation, Noise Suppression and Automatic Gain Control for Real-Time Communications（2022 ICASSP）"></a>NN3A: Neural Network supported Acoustic Echo Cancellation, Noise Suppression and Automatic Gain Control for Real-Time Communications（2022 ICASSP）</h1><p><img src="https://s2.loli.net/2022/06/08/7TWgB4AQvDtaEyL.png" alt="image-20220608095614784"></p>
+<p>结合了自适应滤波器和多任务模型，用于<strong>残余回声抑制、降噪（NS）和近端语音活动检测</strong>。</p>
+<ul>
+<li><strong>生成掩码</strong></li>
+</ul>
+<p>PS：模型部分写的很模糊。</p>
+<h2 id="问题定义-5"><a href="#问题定义-5" class="headerlink" title="问题定义"></a>问题定义</h2><p>在 t 时间下麦克风信号为：</p>
+<img src="https://s2.loli.net/2022/06/08/N67cBuVxdinWKHM.png" alt="image-20220608100606148" style="zoom:80%;" />
+
+<p>$x(t),s(t),v(t)$ 分别为远端信号、近端语音和环境噪声，$a(t)$ 是回声路径，$<em>$ 表示卷积。AEC、降噪（NS）和自动增益控制（AGC）的任务是在给定麦克风信号和远端信号的情况下，*<em>恢复近端语音</em></em> $s(t)$ 的适当缩放版本。</p>
+<p>该算法是在频域中开发的，变量的频率表示用大写字母表示，如 D、X、S。</p>
+<h2 id="线性滤波器"><a href="#线性滤波器" class="headerlink" title="线性滤波器"></a>线性滤波器</h2><p>首先采用线性自适应滤波器从麦克风信号中去除回声估计 Y：</p>
+<img src="https://s2.loli.net/2022/06/08/rKxhClu7fLVOJ5Q.png" alt="image-20220608101437058" style="zoom:80%;" />
+
+<p>$x_{L,f}=[X_{t,f},X_{t-1,f},…,X_{t-L+1,f}]^T$，f 为频率索引，$(·)^T$ 和 $(·)^H$ 分别表示转置和共轭转置，L 是滤波器的抽头。使用加权递归最小二乘（wRLS）算法推导滤波器系数，如下所示：</p>
+<img src="https://s2.loli.net/2022/06/08/43di7lF8kShCGAm.png" alt="image-20220608101810862" style="zoom:80%;" />
+
+<p> 其中 $β∈ [0,2]$ 是与先验语音源相关的形状参数，$(·)^∗$ 表示复共轭。</p>
+<h2 id="多任务模型"><a href="#多任务模型" class="headerlink" title="多任务模型"></a>多任务模型</h2><p><img src="https://s2.loli.net/2022/06/08/pTOyCrJlABI35NK.png" alt="image-20220608102034471"></p>
+<p>经过线性滤波后，设计了基于神经网络的多任务模型，进一步抑制残余回声，去除环境噪声：</p>
+<img src="https://s2.loli.net/2022/06/08/VYd6NOcbJZ8fo93.png" alt="image-20220608102102656" style="zoom:80%;" />
+
+<p>其中 $M_{t,f}$ 是从信号集 $f_t={E_{t,f},Y_{t,f},D_{t,f},X_{t,f}}$ 推断出的时频掩码。推断过程表示为：</p>
+<img src="https://s2.loli.net/2022/06/08/s8Bf6OWr7ahC4RS.png" alt="image-20220608102251173" style="zoom:80%;" />
+
+<p>其中，$h^j_t$ 是第 j 层的输出，$P_t$ 是近端语音活动的概率，Linear(·) 表示具有适当参数大小的仿射变换层。选择深度前馈顺序存储网络（DFSMN）来建模时间序列中的时间依赖关系，一个 DFSMN 层表示为：</p>
+<img src="https://s2.loli.net/2022/06/08/CgurfWpMOQwovbB.png" alt="image-20220608102624523" style="zoom:80%;" />
+
+<p>$m_\tau$ 是对历史输出 $\tilde h^j_{t-\tau}$ 进行加权的时不变记忆参数（time-invariant memory parameter），$\odot$ 表示按元素相乘。</p>
+<p>给定预定义的训练目标，如 PSM：</p>
+<img src="https://s2.loli.net/2022/06/08/7ItXwdUm2SWyPD5.png" alt="image-20220608103220060" style="zoom:80%;" />
+
+<p>该网络模型的训练目标是最小化均方误差损失 $\mathcal L_{mask}$ 和二元交叉熵损失 $\mathcal L_{vad}$：</p>
+<img src="https://s2.loli.net/2022/06/08/xFEtuDU3m84aqbr.png" alt="image-20220608103421685" style="zoom:80%;" />
+
+<p>$\bar P_t\in{0,1}$ 是近端语音活动。实验发现，<u>在一般的均方误差损失下训练的模型不能完全消除残余回声</u>。因此，引入加权函数如下：</p>
+<img src="https://s2.loli.net/2022/06/08/mzMA4PGwXnhVdqW.png" alt="image-20220608103605756" style="zoom:80%;" />
+
+<h2 id="后处理"><a href="#后处理" class="headerlink" title="后处理"></a>后处理</h2><p>经过处理的信号的声度在不同的应用中可能会发生变化。因此，AGC 算法被置于后处理阶段：</p>
+<img src="https://s2.loli.net/2022/06/08/6dTmYLglbNUpICt.png" alt="image-20220608104008306" style="zoom:80%;" />
+
+<p>$g(·)$ 由用于计算增益的峰值电平检测器（peak level detector）和用于调整增益的增益控制器组成。</p>
+<h1 id="Deep-Adaptation-Control-for-Acoustic-Echo-Cancellation（2022-ICASSP）"><a href="#Deep-Adaptation-Control-for-Acoustic-Echo-Cancellation（2022-ICASSP）" class="headerlink" title="Deep Adaptation Control for Acoustic Echo Cancellation（2022 ICASSP）"></a>Deep Adaptation Control for Acoustic Echo Cancellation（2022 ICASSP）</h1><img src="https://s2.loli.net/2022/06/08/gOTuPJUiGdkFX7e.png" alt="image-20220608104700292" style="zoom: 67%;" />
+
+<p>神经网络从数据中<strong>推断出最佳步长</strong>，并将其提供给用于 AEC 的 NLMS 滤波器。</p>
+<ul>
+<li>通过<strong>估计回声路径</strong>来消除回声，<strong>不确定对非线性回声的效果</strong></li>
+</ul>
+<h2 id="问题定义-6"><a href="#问题定义-6" class="headerlink" title="问题定义"></a>问题定义</h2><img src="https://s2.loli.net/2022/06/08/DeKwc9MopxdhTtj.png" alt="image-20220608110924547" style="zoom:67%;" />
+
+<p>图 1 为所提出模型 DVSS-NLMS 的架构。时间索引 n 处的麦克风信号 $m(n)$ 由下式给出：</p>
+<img src="https://s2.loli.net/2022/06/08/BVY1U7iw3xv86oH.png" alt="image-20220608111022864" style="zoom:67%;" />
+
+<p>$s(n),w(n)$ 分别表示近端语音信号和噪声，$y(n)=x^T_{NL}(n)h(n)$ 是非线性混响回声，$x_{NL}(n)$ 表示经过非线性失真后，远端信号的最近 L 个样本。回声路径 $h(n)$ 被建模为具有 L 个系数的 FIR：</p>
+<img src="https://s2.loli.net/2022/06/08/FpAx9KQSvgVWLte.png" alt="image-20220608111458744" style="zoom:67%;" />
+
+<p>具有 L 个参数的 NLMS 滤波器估计回声路径 $\hat h(n)$，估计的回声为 $\hat y(n)=x^T(n)\hat h(n)$：</p>
+<img src="https://s2.loli.net/2022/06/08/eK3XLPZjdDaplkq.png" alt="image-20220608112141434" style="zoom:80%;" />
+
+<p>近端语音信号的估计由下式给出：</p>
+<img src="https://s2.loli.net/2022/06/08/kYbjF7LsBSpeVGv.png" alt="image-20220608112338605" style="zoom:80%;" />
+
+<p>我们的目标是估计 $\hat h(n)$，并通过减小 $y(n)-\hat y(n)$ 来消除回声，而不会导致语音 $s(n)$ 失真。</p>
+<h2 id="双讲中的通用-NLMS-滤波器"><a href="#双讲中的通用-NLMS-滤波器" class="headerlink" title="双讲中的通用 NLMS 滤波器"></a>双讲中的通用 NLMS 滤波器</h2><p>NLMS 自适应过程的先验和后验误差信号分别给出：</p>
+<img src="https://s2.loli.net/2022/06/08/Kn4HMSIGRVDUE12.png" alt="image-20220608112804413" style="zoom:80%;" />
+
+<p>此外，NLMS 自适应过滤器遵循更新规则：</p>
+<img src="https://s2.loli.net/2022/06/08/WuGdQAXexcUji9v.png" alt="image-20220608112842193" style="zoom:80%;" />
+
+<p>其中 $μ(n)$ 是控制收敛速度和自适应偏移之间权衡的<strong>步长</strong>，而 $\hat h(0)$ 有 L 个零。从（7）–（9），我们有：</p>
+<img src="https://s2.loli.net/2022/06/08/l9k5vpA1mPXhgsB.png" alt="image-20220608113026782" style="zoom:80%;" />
+
+<p>为了推导 $μ(n)$ 的一般表达式，我们从后验误差中施加回声消除，即：</p>
+<img src="https://s2.loli.net/2022/06/08/5GchgM7Z12PBwl8.png" alt="image-20220608113154716" style="zoom:80%;" />
+
+<p>假设 $s(n)$ 和 $w(n)$ 不相关，将（11）代入（10）得到：</p>
+<img src="https://s2.loli.net/2022/06/08/ztOovGJpsw43xCF.png" alt="image-20220608113256492" style="zoom:80%;" />
+
+<p>其中，$E[·]$ 表示经验期望，$δ&gt;0$ 是一个调节参数，用于避免除零。</p>
+<h2 id="NN-推断最优步长"><a href="#NN-推断最优步长" class="headerlink" title="NN 推断最优步长"></a>NN 推断最优步长</h2><p>根据式（12），步长涉及到远端信号、先验误差、近端语音和噪声信号。尽管近端信号在实践中不可用，但它们包含可用的麦克风信号。因此，我们提出了一种 DNN，它接收<strong>远端、先验误差和麦克风信号作为输入</strong>，并将它们映射到相应的最佳步长。</p>
+<p>采用了 CNN，它有三个输入通道，每个输入信号一个通道，步长为一个神经元的输出。每个输入通道都提供相应的<u>波形信号的短时傅立叶变换（STFT）振幅</u>。具体如下：</p>
+<ul>
+<li>第一个卷积层采用 3×3 的核大小，步长为 3，dilation 为 5，padding 为 1，然后是二维批量归一化（BN）和 ReLU 激活层，有 3 个输入通道和 16 个输出通道。</li>
+<li>第二个卷积层有 16 个输入和 16 个输出通道。一个全连接层接收 16 个 filter，然后是 1D BN、ReLU 激活函数和概率为 0.5 的 dropout。</li>
+<li>最后，将该结果连接到第二个尺寸为 512×1 的全连接层，该层以 sigmoid 激活函数结束。</li>
+</ul>
+<p>目标函数是神经网络的预测值和最佳步长 $\mu^*(n)$ 之间的 $l_2$ 距离。</p>
+<h1 id="DeepFilterNet-A-Low-Complexity-Speech-Enhancement-Framework-for-Full-Band-Audio-based-on-Deep-Filtering（2022-ICASSP）"><a href="#DeepFilterNet-A-Low-Complexity-Speech-Enhancement-Framework-for-Full-Band-Audio-based-on-Deep-Filtering（2022-ICASSP）" class="headerlink" title="DeepFilterNet: A Low Complexity Speech Enhancement Framework for Full-Band Audio based on Deep Filtering（2022 ICASSP）"></a>DeepFilterNet: A Low Complexity Speech Enhancement Framework for Full-Band Audio based on Deep Filtering（2022 ICASSP）</h1><img src="https://s2.loli.net/2022/06/08/orFl4CgKHUjEMcd.png" alt="image-20220608141131094" style="zoom:67%;" />
+
+<p><strong>开源：</strong><a target="_blank" rel="noopener" href="https://github.com/Rikorose/DeepFilterNet">https://github.com/Rikorose/DeepFilterNet</a></p>
+<p>两阶段的<strong>语音增强框架</strong>：</p>
+<ul>
+<li>首先，使用 ERB 尺度增益来增强频谱包络，模拟人类的频率感知。</li>
+<li>第二阶段采用深度滤波来增强语音的周期成分。</li>
+</ul>
+<h2 id="问题定义-7"><a href="#问题定义-7" class="headerlink" title="问题定义"></a>问题定义</h2><p>混合信号 $x(t)=s(t)*h(t)+z(t)$，$s(t)$ 为干净语音，$h(t)$ 为从扬声器到麦克风的室内脉冲响应，$z(t)$ 是包含混响的噪声信号。频域表示为 $X(k,f)=S(k,f)·H(k,f)+Z(k,f)$，均为 STFT 表示，k 和 f 分别是时频索引。</p>
+<p>深度滤波由 TF 域中的复数滤波器定义：</p>
+<img src="https://s2.loli.net/2022/06/08/7HRLSwFkafZDE69.png" alt="image-20220608142153017" style="zoom: 67%;" />
+
+<p>其中，C 是应用于输入频谱 X 和增强频谱 $\hat Y$ 的滤波器阶数为 N 的复系数。</p>
+<p>在我们的框架中，运用深度滤波得到增益增强的频谱 $Y^G$。$l$ 是一个可选的前瞻（look-ahead），如果 $l≥1$，则允许在线性组合中加入非因果抽头。为了进一步确保深度滤波只影响周期部分，我们引入一个可学习的加权因子 $α$ 来生成最终的输出频谱。</p>
+<img src="https://s2.loli.net/2022/06/08/Bv7YONoQ8DecwXA.png" alt="image-20220608142636471" style="zoom: 67%;" />
+
+<h2 id="模型概述"><a href="#模型概述" class="headerlink" title="模型概述"></a>模型概述</h2><img src="https://s2.loli.net/2022/06/08/TKj4BibsuFd1Q2x.png" alt="image-20220608142849847" style="zoom: 67%;" />
+
+<p>对 DNN 使用了两种输入特征：</p>
+<ol>
+<li>对于 ERB 特征 $X_{ERB}(k,b),b\in[0,N_{ERB}]$，计算对数功率谱，归一化使用带 1s 衰减的 exponential mean normalization，以及具有可设置频带数 $N_{ERB}$ 的矩形 ERB 滤波器组（FB）。</li>
+<li>对于深度滤波网络特征 $X_{DF}(k,f’),f’\in[0,f_{DF}]$，使用复数频谱作为输入，并使用具有相同衰减的 exponential unit normalization 对其进行归一化。</li>
+</ol>
+<p>encoder/decoder 结构用于预测 ERB 尺度增益。为了进一步增强周期分量，DeepFilterNet 预测 N 阶的每个频带的滤波器系数 $C^N$。</p>
+<h2 id="DNN-模型-1"><a href="#DNN-模型-1" class="headerlink" title="DNN 模型"></a>DNN 模型</h2><img src="https://s2.loli.net/2022/06/08/DBbrjA8MCy61xFP.png" alt="image-20220608144125509" style="zoom:67%;" />
+
+<p>采用图 2 所示的的 U-Net 架构。卷积块由核大小为 3x2 的可分离卷积（深度卷积，然后是 1x1 卷积）和 C=64 个通道组成，然后是批量归一化和 ReLU 激活。卷积层在时间上对齐，以便第一层可以引入整体 look-ahead $l_{DNN}$。</p>
+<p>对于线性层和 GRU 层，将层输入拆分为 P=8 组，从而生成 P 个较小的 GRU/线性层，hidden size 为 512/P=64。输出被随机打乱以恢复组间相关性，并再次拼接得到完整 hidden size。</p>
+<h2 id="损失函数-5"><a href="#损失函数-5" class="headerlink" title="损失函数"></a>损失函数</h2><p>提供理想的系数 $C^N$ 并非易事，我们使用压缩频谱损失（compressed spectral loss）隐式学习 ERB 增益 G 和滤波器系数 $C^N$：</p>
+<img src="https://s2.loli.net/2022/06/08/JV7ztvbqnli8LdZ.png" alt="image-20220608145338283" style="zoom: 67%;" />
+
+<p>$c=0.6$ 是用于模拟感知响度的压缩因子。具有幅值和相位的感知项使得该损失适合于建模<strong>实值增益</strong>和<strong>复值 DF 系数</strong>预测。为了加强振幅接近零的 TF 窗口的梯度，我们计算了 $φ_X$ 的背离角方法（angle backward method）：</p>
+<img src="https://s2.loli.net/2022/06/08/cCo5LYjgEMBz6y1.png" alt="image-20220608150823345" style="zoom:67%;" />
+
+<p>$\Re{X}$ 和 $\Im{X}$ 分别表示频谱 X 的实部和虚部，$|X_h|^2=max(\Re{X}^2+\Im{X}^2,1e^{-12})$ 是增强的平方幅度，避免除零。</p>
+<p>作为额外的损失，我们强制 DF 分量仅增强信号的周期部分：</p>
+<img src="https://s2.loli.net/2022/06/08/VITSQ3EblqG82R5.png" alt="image-20220608151547192" style="zoom:67%;" />
+
+<p>$\mathbb 1_{LSNR&lt;-10dB}$ 为特征函数，若值为 1 则表示局部信噪比（local SNR）小于 -10 dB，$\mathbb 1_{LSNR&gt;-5dB}$ 为 1 则表示局部信噪比大于 -5 dB。总损失如下：</p>
+<img src="https://s2.loli.net/2022/06/08/ruWcEtsvSbw3xjA.png" alt="image-20220608152412381" style="zoom:67%;" />
+
+<h1 id="DeepFilterNet2-Towards-Real-Time-Speech-Enhancement-on-Embedded-Devices-for-Full-Band-Audio（2022-IWAENC）"><a href="#DeepFilterNet2-Towards-Real-Time-Speech-Enhancement-on-Embedded-Devices-for-Full-Band-Audio（2022-IWAENC）" class="headerlink" title="DeepFilterNet2: Towards Real-Time Speech Enhancement on Embedded Devices for Full-Band Audio（2022 IWAENC）"></a>DeepFilterNet2: Towards Real-Time Speech Enhancement on Embedded Devices for Full-Band Audio（2022 IWAENC）</h1><img src="https://s2.loli.net/2022/06/08/1cmlaIzAbx365fw.png" alt="image-20220608153029977" style="zoom:67%;" />
+
+<p>对 DeepFilterNet 的小部分改进，进一步降低其计算量，<strong>开源</strong> <a target="_blank" rel="noopener" href="https://github.com/Rikorose/DeepFilterNet">https://github.com/Rikorose/DeepFilterNet</a></p>
+<h2 id="问题定义和模型架构"><a href="#问题定义和模型架构" class="headerlink" title="问题定义和模型架构"></a>问题定义和模型架构</h2><p><img src="https://s2.loli.net/2022/06/08/JYa67tlpiWZGodh.png" alt="image-20220608154049044"></p>
+<p>各项参数的定义见上篇论文。</p>
+<img src="https://s2.loli.net/2022/06/08/tUBJLpsFDRMbYQk.png" alt="image-20220608154241387" style="zoom:67%;" />
+
+<p>如图 3，DNN 模型中，保留了 DeepFilterNet 的 U-Net 结构，但做了以下调整：</p>
+<ol>
+<li><strong>编码器的统一</strong>：ERB 和复值特征的卷积现在都在编码器中处理、拼接并传递给分组线性（GLinear）层和 GRU。</li>
+<li><strong>简化分组</strong>：之前线性层和 GRU 层的分组是通过单独的较小层实现的，这会导致相对较高的处理开销。在 DeepFilterNet2 中，只有线性层在<u>频率轴上分组</u>，通过单个矩阵乘法实现。GRU 的 hidden dim 反而减少到256 维，这大大减少了运行时间。</li>
+<li><strong>卷积核大小的减少</strong>：虽然时间卷积（TCN）已成功应用于 SE，但它们在实时推理过程中需要时间缓冲。因此，我们将卷积和转置卷积的核大小从 2×3 减小到 1×3，即频率轴上的 1D。</li>
+<li><strong>Depthwise pathway convolutions</strong>：当使用可分离卷积时，大量的参数和 FLOPs 位于 1×1 卷积处。因此，将分组添加到路径卷积（PConv）中可以大大减少参数，同时不会损失任何显著的 SE 性能。</li>
+</ol>
+<h1 id="PercepNet-A-Phase-and-SNR-Aware-PercepNet-for-Real-Time-Speech-Enhancement（2022-InterSpeech）"><a href="#PercepNet-A-Phase-and-SNR-Aware-PercepNet-for-Real-Time-Speech-Enhancement（2022-InterSpeech）" class="headerlink" title="PercepNet+: A Phase and SNR Aware PercepNet for Real-Time Speech Enhancement（2022 InterSpeech）"></a>PercepNet+: A Phase and SNR Aware PercepNet for Real-Time Speech Enhancement（2022 InterSpeech）</h1><img src="https://s2.loli.net/2022/06/08/vUDRcyEeIq128Ok.png" alt="image-20220608155715414" style="zoom:67%;" />
+
+<p>对 PercepNet 的改进：</p>
+<ol>
+<li>引入了一种<strong>相位感知结构</strong>，通过将复值特征和复值子带增益分别作为深度网络的输入和输出，将相位信息充分利用到 PercepNet 中</li>
+<li>专门设计了<strong>信噪比（SNR）估计器和信噪比切换后处理（SNR-switched post-processing）</strong>，以缓解原始 PercepNet 在高信噪比条件下出现的过衰减（OA）</li>
+<li>将 GRU 层替换为 TF-GRU，以<strong>建模时间和频率依赖关系</strong></li>
+<li>以<strong>多目标学习方式</strong>整合复值子带增益损失、信噪比、基音滤波强度和 OA 损失，以进一步提高语音增强性能</li>
+</ol>
+<p><img src="https://s2.loli.net/2022/06/08/U6Otj3ywJiZTNum.png" alt="image-20220608161710854"></p>
+<h2 id="相位感知结构"><a href="#相位感知结构" class="headerlink" title="相位感知结构"></a>相位感知结构</h2><p>原始 PercepNet 的 DNN 输入特征与 34 个 ERB 频带相关，原始 70 维声学特征 $f_o$ 由 68 维频带相关特征（34 个用于频谱能量，34 个用于 pitch coherence）、基音周期和基音相关性组成。</p>
+<p>对于每个频带 b，DNN 模型输出两个元素：能量增益 $\hat g_b$ 和基音滤波器强度 $\hat r_b$。这些特征仅侧重于增强噪声频谱包络和基音谐波，而<strong>忽略了相位信息</strong>的重要性，因为相位信息会显著影响人类的感知。</p>
+<p>为了利用相位信息，我们将每个 ERB 频带中含噪语音 $y(n)$ 的复值 STFT 的实部和虚部直接连接起来，形成一个总共 68 维的<u>复特征</u> $f_c$。然后，如图 1（b）所示，最终将 $f_o$ 和 $f_c$ 连接起来，以训练改进的 DNN 模型。</p>
+<p>除了添加复值特征外，我们还<u>将原始能量增益替换为复值增益</u>，以更加关注相位。我们引导网络学习实部和虚部增益 $g^r_b$ 和 $g^i_b$，以重构目标语音的幅度和相位谱，并将其定义为：</p>
+<img src="https://s2.loli.net/2022/06/08/VIJWAQs7wFk3Ufj.png" alt="image-20220608163216350" style="zoom:67%;" />
+
+<p>$X_b(t)$ 和 $Y_b(t)$ 是帧 t 中 ERB 频带 b 的干净信号 $x(n)$ 及其噪声信号 $y(n)$ 的复数频谱，2 表示 L2 范数运算。</p>
+<h2 id="信噪比估计器与信噪比切换后处理"><a href="#信噪比估计器与信噪比切换后处理" class="headerlink" title="信噪比估计器与信噪比切换后处理"></a>信噪比估计器与信噪比切换后处理</h2><p>在去除噪声的过程中，很容易发生语音失真。在 PercepNet 中，这种失真可能是由于<u>能量增益估计不准确和包络后滤波设计不当</u>造成的。在 PercepNet+ 中，我们提出了一种信噪比估计器，并设计了一种信噪比切换后处理来缓解 PercepNet 中的语音失真。</p>
+<h3 id="SNR-estimator"><a href="#SNR-estimator" class="headerlink" title="SNR estimator"></a>SNR estimator</h3><p>如图 1（b）所示，它由一个 GRU 和一个具有 sigmoid 激活功能的全连接层组成，并在多目标学习框架下预测帧级 SNR，以保持良好的语音质量。对于 $y(n)$ 的第 t 帧，归一化的 ground-truth SNR $S(t)\in[0,1]$ 定义如下：</p>
+<img src="https://s2.loli.net/2022/06/08/A2FrNtZSDlxTBah.png" alt="image-20220608170459707" style="zoom:67%;" />
+
+<p>其中 $μ$ 和 $σ$ 是整个含噪语音的信噪比 $Q(t)$ 的平均值和标准差，$X_m(t)$ 和 $N_m(t)$ 分别表示干净语音和噪声的幅度谱。</p>
+<h3 id="SNR-switched-MMSE-LSA-post-processing"><a href="#SNR-switched-MMSE-LSA-post-processing" class="headerlink" title="SNR-switched MMSE-LSA post-processing"></a>SNR-switched MMSE-LSA post-processing</h3><p>后处理模块可能会损害几乎没有噪声的测试样本的感知质量。因此，在 PercepNet+ 中，如图 1（a）所示，每个帧的预测 SNR $\hat S$ 用于控制是否应执行后处理模块。</p>
+<p>如果 $\hat S$ 大于预定义阈值，则由 $\hat g^r_b$ 和 $\hat g^i_b$ 增强的频谱 $\hat X_c$ 将<u>直接作为最终输出</u>。否则，将通过后处理进一步增强 $\hat X_c$ 以去除残余噪声。</p>
+<p>此外，我们发现，传统的基于 MMSE-LSA 的后处理在最近的端到端 SE 系统中取得了显著的效果。因此，在 PercepNet+ 中，我们还在信噪比切换后处理模块中使用 MMSE-LSA 替换原始包络后滤波：</p>
+<img src="https://s2.loli.net/2022/06/08/XHGANf4Jgnw2dUj.png" alt="image-20220608171632426" style="zoom: 67%;" />
+
+<img src="https://s2.loli.net/2022/06/08/GlKzCr6nLUa3Yh7.png" alt="image-20220608171607049" style="zoom: 67%;" />
+
+<p>$G(t)$ 是 MMSE-LSA 帧级增益，$\hat X_c(t)$ 是由帧 t 的复值增益增强的频谱，$\hat X(t)$ 是如图 1（a）中所示的最终增强干净语音，$ξ(t)$，$γ(t)$ 先验和后验帧级 SNR。</p>
+<h2 id="多目标损失函数"><a href="#多目标损失函数" class="headerlink" title="多目标损失函数"></a>多目标损失函数</h2><p>PercepNet 中 DNN 模型的原始损失函数 $L_P$ 分为两部分：能量增益损失 $L_g$ 和基音滤波器强度 $L_r$。</p>
+<img src="https://s2.loli.net/2022/06/08/CuXqH4PLdxFyiaK.png" alt="image-20220608172014210" style="zoom:67%;" />
+
+<p>其中，$g_b$、$\hat g_b$、$r_b$、$\hat r_b$ 分别为 ground-truth 和 DNN 预测的基于 ERB 的频带能量增益和基音滤波器强度。$C_1$、λ、α、β 是调谐参数。</p>
+<p>将不对称损失 $L_{OA}$ 运用于 $L_g$，以解决高信噪比条件下的质量损失：</p>
+<img src="https://s2.loli.net/2022/06/08/4kGfDcwx1qPIHhW.png" alt="image-20220608172410370" style="zoom:67%;" />
+
+<p>最终使用以下多目标损失函数 $L_{P+}$ 联合训练 PercepNet+ 的 DNN 模型：</p>
+<img src="https://s2.loli.net/2022/06/08/FielWwUTRnJ6xd2.png" alt="image-20220608172610900" style="zoom:67%;" />
+
+<p>其中 $C_2$、$C_3$、$C_4$ 是调节参数。</p>
+<h2 id="TF-GRU-块"><a href="#TF-GRU-块" class="headerlink" title="TF-GRU 块"></a>TF-GRU 块</h2><p>PercepNet 使用 GRU 层在<u>时间尺度</u>上建模时间依赖关系。我们使用另一个 GRU 层来<u>模拟频谱模式的频率演变</u>。</p>
+<p>如图 1（b）所示，我们用两个 TF-GRU 块替换 PercepNet 中的两个 GRU 层，每个 TF-GRU 由一个时间 GRU（TGRU）层和一个频率 GRU（FGRU）层组成。</p>
+<p>然后将 TGRU 和 FGRU 的输出合并，形成最终 TF-GRU 输出。</p>
+<h1 id="Personalized-Acoustic-Echo-Cancellation-for-Full-duplex-Communications（2022-InterSpeech）"><a href="#Personalized-Acoustic-Echo-Cancellation-for-Full-duplex-Communications（2022-InterSpeech）" class="headerlink" title="Personalized Acoustic Echo Cancellation for Full-duplex Communications（2022 InterSpeech）"></a>Personalized Acoustic Echo Cancellation for Full-duplex Communications（2022 InterSpeech）</h1><p><img src="https://s2.loli.net/2022/06/09/namWp81CyAX5Utd.png" alt="image-20220609153337817"></p>
+<p>目前基于 DNN 的 AEC 模型<strong>允许所有近端演讲者通过</strong>，包括相互干扰的演讲，因为模型<strong>没有辅助信息来确定谁才是真正的近端说话人</strong>。这就提出了个性化回声消除（PAEC）的问题，PAEC 的定义是在<strong>同时消除回声、背景噪声和干扰语音的同时提取目标说话人</strong>。</p>
+<p>针对 PAEC，提出了一个 gated temporal convolutional neural network（GTCNN），一个深度学习方法。</p>
+<h2 id="问题定义-8"><a href="#问题定义-8" class="headerlink" title="问题定义"></a>问题定义</h2><img src="https://s2.loli.net/2022/06/09/MDFo4dUl7kESsyf.png" alt="image-20220609153848938" style="zoom:67%;" />
+
+<p>PAEC 架构如图 1，麦克风信号 $y(n)$ 由目标近端语音 $s(n)$，干扰语音 $z(n)$，回声 $d(n)$ 和噪声 $v(n)$ 组成。</p>
+<img src="https://s2.loli.net/2022/06/09/OhBMeryx9pcfLSP.png" alt="image-20220609154023314" style="zoom:67%;" />
+
+<p>通过将远端信号 $x(n)$ 与回声路径 $h(n)$ 卷积得到 $d(n)$。PAEC 的目标是从麦克风信号中恢复目标说话人的声音：</p>
+<img src="https://s2.loli.net/2022/06/09/ftRwHEZBe412mp6.png" alt="image-20220609154120718" style="zoom:67%;" />
+
+<p>$e_s(n)$ 和 $e_x(n)$ 分别是从近端说话人和远端说话人提取的语音片段。</p>
+<h2 id="特征提取"><a href="#特征提取" class="headerlink" title="特征提取"></a>特征提取</h2><p>该方法适用于复数频谱域。帧长和帧移大小分别为 20 ms 和 10 ms。然后对 $y(n)$ 和 $x(n)$ 的每一帧应用 320 点 STFT，分别产生复数谱 $Y(t,f)$ 和 $X(t,f)$。输入特征是压缩过的频谱实部和虚部：</p>
+<img src="https://s2.loli.net/2022/06/09/3Q9qATu1I4t2aDO.png" alt="image-20220609154544654" style="zoom:67%;" />
+
+<p>$\angle Y(t,f)$ 表示相位。$\hat X_r(t,f),\hat X_i(t,f)$ 也是用同样方式获得。最后将 $\hat X_{r/i}(t,f),\hat Y_{r/i}(t,f)$ 拼接在一起。</p>
+<h2 id="Speaker-Encoder"><a href="#Speaker-Encoder" class="headerlink" title="Speaker Encoder"></a>Speaker Encoder</h2><p><img src="https://s2.loli.net/2022/06/09/GVqldYBh3zIk1Xs.png" alt="image-20220609160121071"></p>
+<p><strong>说话人嵌入</strong>（speaker embedding）用于识别观测信号中的目标说话人，以区分目标语音与背景噪声、干扰语音和回声。</p>
+<p>在所提出的 PAEC 系统中，使用一种称为 fast ResNet 的轻量级说话人识别神经网络从近端和远端用户的语音片段中提取说话人嵌入。使用预训练好的 fast ResNet，表示为 $\mathcal E$，然后连接一个全连接层 $\mathcal D$，将 512 维说话人嵌入投影到更紧凑的 256 维表示中：</p>
+<img src="https://s2.loli.net/2022/06/09/V5HNv6Ma23rWbYQ.png" alt="image-20220609155435225" style="zoom:67%;" />
+
+<p>$\Phi_{\mathcal E},\Phi_{\mathcal D_s},\Phi_{\mathcal D_x}$ 为对应的参数。说话人嵌入 $E_s$ 和 $E_x$ 将沿时间轴重复，使其长度与输入信号一致。</p>
+<p>图 2（b）中的选择操作用于确定不同说话人嵌入的组合。speaker encoder 的最终输出 $E\in{None,E_s,E_x,E_{mix}}$，None 表示没有使用辅助信息，$E_{mix}=[E_s;E_x]$。</p>
+<h2 id="GTCNN"><a href="#GTCNN" class="headerlink" title="GTCNN"></a>GTCNN</h2><p>GTCNN 由三个模块组成：</p>
+<ul>
+<li>用于特征提取的编码器</li>
+<li>用于估计频谱的解码器</li>
+<li>用于序列建模的 stacked GTCN 块（S-GTCN）</li>
+</ul>
+<h3 id="编码器"><a href="#编码器" class="headerlink" title="编码器"></a>编码器</h3><p>编码器由 5 个 gated Conv2D（GConv）层组成，实部解码器和虚部解码器均由 5 个 gated transposed Conv2D（TrGConv）层组成，分别用于重构估计语音频谱的实部和虚部。</p>
+<p>在相应的 GConv 层和 TrGConv 层之间，使用 pointwise Conv2D（PConv）层连接浅特征表示和深特征表示。</p>
+<h3 id="GTCN-层"><a href="#GTCN-层" class="headerlink" title="GTCN 层"></a>GTCN 层</h3><p>在如图 2（c）所示的 GTCN 层中，第一个 PConv 层用于压缩特征尺寸，最后一个 PConv 层用于恢复与输入相同的特征尺寸。dilated Conv1D（DConv）层插入其间，以扩大感受野。DConv 层的卷积核大小设置为 3。$σ$ 表示 sigmoid 函数，$\otimes$ 表示 point-wise multiplication，$\oplus$ 表示残差连接。</p>
+<p>引入门控机制来动态控制信息流，在每个 DConv 层之前运用 PReLU 激活和 instance normalization。</p>
+<h3 id="S-GTCN-块"><a href="#S-GTCN-块" class="headerlink" title="S-GTCN 块"></a>S-GTCN 块</h3><p>如图 2（d）所示，S-GTCN 块由四个具有不同感受野的 GTCN 层组成。dilation 系数分别设置为1、2、5 和 9。这种堆叠结构利用多达 31 帧的历史信息。使用 S-GTCN 进行序列建模输出形成了一种短期记忆（LSTM）替代方法。</p>
+<p>当 E=None 时，GTCNN 作为 unconditional AEC 模型工作。对于 $E=E_s$ 或 $E=E_x$，近端语音或远端语音被用作辅助信息。对于 $E=E_{mix}$，来自两端的语音被用作辅助信息。这三种个性化模型仅在输入特征大小上有所不同。</p>
+<h2 id="损失函数-6"><a href="#损失函数-6" class="headerlink" title="损失函数"></a>损失函数</h2><p>GTCNN 模型最后一层全连接层的输出 $W(t,f)$ 解压缩如下：</p>
+<img src="https://s2.loli.net/2022/06/09/KRpHv542zJOLBYh.png" alt="image-20220609163332914" style="zoom:67%;" />
+
+<p>$\hat S_r(t,f),\hat S_i(t,f)$ 分别表示为估计频谱 $\hat s(n)$ 的实部和虚部。损失函数如下：</p>
+<img src="https://s2.loli.net/2022/06/09/vEJsBcPi8kMQN9p.png" alt="image-20220609164451838" style="zoom:67%;" />
+
+<h1 id="Conv-TasNet（2019）"><a href="#Conv-TasNet（2019）" class="headerlink" title="Conv-TasNet（2019）"></a>Conv-TasNet（2019）</h1><p>端到端的声源分离模型。由三个处理阶段组成，如图所示：编码器、分离和解码器。首先，使用编码器模块将混合波形转换为其在中间特征空间中的相应表示。然后，该表示用于在每个时间步长估计每个源的掩码。然后，通过使用解码器模块将经过掩码的编码特征来重构源波形。</p>
+<p><img src="https://s2.loli.net/2022/07/14/gynzZoSAKWCxbEe.png" alt="image-20220714100633154"></p>
+<h1 id="A-Complex-Spectral-Mapping-with-Inplace-Convolution-Recurrent-Neural-Networks-For-Acoustic-Echo-Cancellation（2022-ICASSP）"><a href="#A-Complex-Spectral-Mapping-with-Inplace-Convolution-Recurrent-Neural-Networks-For-Acoustic-Echo-Cancellation（2022-ICASSP）" class="headerlink" title="A Complex Spectral Mapping with Inplace Convolution Recurrent Neural Networks For Acoustic Echo Cancellation（2022 ICASSP）"></a>A Complex Spectral Mapping with Inplace Convolution Recurrent Neural Networks For Acoustic Echo Cancellation（2022 ICASSP）</h1><p>该模型具有一个编码器和两个相同结构的解码器（表示为幅度解码器和相位解码器）。编码器和解码器分别由 6 个级联的 inplace 卷积层和反卷积层组成。</p>
+<p><img src="https://s2.loli.net/2022/07/14/gmn6NckRDUMLBpY.png" alt="image-20220714102118767"></p>
+<h1 id="NeuralEcho（2022-ICASSP）"><a href="#NeuralEcho（2022-ICASSP）" class="headerlink" title="NeuralEcho（2022 ICASSP）"></a>NeuralEcho（2022 ICASSP）</h1><p><img src="https://s2.loli.net/2022/07/15/AHIZ9EjcqfXDrT5.png" alt="image-20220715162745470"></p>
+<p><img src="https://s2.loli.net/2022/07/15/Yvm6HUEPGOqDnxt.png" alt="image-20220715174101306"></p>
+<h1 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h1><ol>
+<li>AEC Challenge：<a target="_blank" rel="noopener" href="https://github.com/microsoft/AEC-Challenge">https://github.com/microsoft/AEC-Challenge</a></li>
+<li>DNS Challenge：<a target="_blank" rel="noopener" href="https://github.com/microsoft/DNS-Challenge/">https://github.com/microsoft/DNS-Challenge/</a></li>
+<li>Musan：一个音乐、语音和噪声的语料库，<a target="_blank" rel="noopener" href="http://www.openslr.org/17/">http://www.openslr.org/17/</a></li>
+<li>OpenSLR：比较全面的语音数据库，包含很多类型的语音数据，但很杂，<a target="_blank" rel="noopener" href="http://www.openslr.org/resources.php">http://www.openslr.org/resources.php</a></li>
+</ol>
+<h1 id="评价指标"><a href="#评价指标" class="headerlink" title="评价指标"></a>评价指标</h1><ol>
+<li><p>ERLE（Echo Return Loss Enhancement）：单位为 dB，主要用于测评回声损耗增益，其值越大越好<br>$$<br>ERLE=10\lg\frac{\mathbb E[d^2(n)]}{\mathbb E[e^2(n)]}<br>$$<br>其中，$\mathbb E$ 表示期望，$d(n)$ 表示在时间 n 处输入信号，$e(n)$ 表示在时间 n 处的输出信号。</p>
+</li>
+<li><p>PESQ（Perceptual Evalution of Speech Quality）：基于 ITU-T P.862，能够对客观语音质量评估提供一个主观 MOS 的预测值，PESQ 得分范围在 <code>-0.5–4.5</code> 之间，得分越高表示语音质量越好。（python 版代码：<a target="_blank" rel="noopener" href="https://github.com/ludlows/python-pesq%EF%BC%89">https://github.com/ludlows/python-pesq）</a></p>
+</li>
+<li><p>POLQA（Perceptual Objective Listening Quality Analysis）：基于 ITU-T P.863，是 PESQ 的继承者，需要获得授权许可，不开放源码。其增加对宽带（Wideband）和超宽（SuperWideband）语音质量评估的能力，同时支持最新的语音编码、VoIP 传输技术和多语言环境。（官网：<a target="_blank" rel="noopener" href="http://www.polqa.info/%EF%BC%89">http://www.polqa.info/）</a></p>
+</li>
+<li><p>AEC Challenge 2021 中提到 ERLE 和 PESQ 这些指标，在有背景噪声和混响的情况下，和真正的主观体验之间有差距，并提供了一个评估工具 P.808：<a target="_blank" rel="noopener" href="https://github.com/microsoft/P.808">https://github.com/microsoft/P.808</a></p>
+</li>
+<li><p>STOI（Short-Time Objective Intelligibility）：可短时客观可懂度，0-1 范围，值越大，可懂度越高。</p>
+</li>
+<li><p>RTF（Real-time Factor）：实时率，模型处理时间和音频长度的比值，基本要求是 $RTF\le 1$。</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/aliutkus/speechmetrics%EF%BC%8C%E5%8C%85%E5%90%AB">https://github.com/aliutkus/speechmetrics，包含</a> PESQ、STOI 等评估指标的开源实现。</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="mailto:undefined">CSU-RoyCheng</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://csu-roycheng.github.io/2022/09/04/AEC%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/">https://csu-roycheng.github.io/2022/09/04/AEC%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AEC/">AEC</a></div><div class="post_share"><div class="social-share" data-image="/img/1.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/04/18/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91Query-Reformulation-for-Descriptive-Queries-of-Jargon-Words-Using-a-Knowledge-Graph-based-on-a-Dictionary/"><img class="next-cover" src="/img/1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">【论文解读】Query Reformulation for Descriptive Queries of Jargon Words Using a Knowledge Graph based on a Dictionary</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">CSU-RoyCheng</div><div class="author-info__description">但知行好事，莫要问前程</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">77</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">Tags</div><div class="length-num">58</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">Categories</div><div class="length-num">10</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/csu-roycheng"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AEC-Challenge-2021"><span class="toc-number">1.</span> <span class="toc-text">AEC Challenge 2021</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Amazon-Rank-1"><span class="toc-number">1.1.</span> <span class="toc-text">Amazon-Rank 1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E6%BB%A4%E6%B3%A2%E5%99%A8"><span class="toc-number">1.1.2.</span> <span class="toc-text">自适应滤波器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AE%8B%E4%BD%99%E5%9B%9E%E5%A3%B0%E6%8A%91%E5%88%B6"><span class="toc-number">1.1.3.</span> <span class="toc-text">残余回声抑制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DNN-%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.4.</span> <span class="toc-text">DNN 模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Alibaba-Rank-2"><span class="toc-number">1.2.</span> <span class="toc-text">Alibaba-Rank 2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E5%BB%B6%E8%A1%A5%E5%81%BF"><span class="toc-number">1.2.1.</span> <span class="toc-text">时延补偿</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wRLS-%E6%BB%A4%E6%B3%A2"><span class="toc-number">1.2.2.</span> <span class="toc-text">wRLS 滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RES"><span class="toc-number">1.2.3.</span> <span class="toc-text">RES</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A5%A5%E5%B0%94%E7%99%BB%E5%A0%A1%E5%A4%A7%E5%AD%A6-Rank-5"><span class="toc-number">1.3.</span> <span class="toc-text">奥尔登堡大学-Rank 5</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-1"><span class="toc-number">1.3.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DTLN-%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.3.2.</span> <span class="toc-text">DTLN 模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E5%9B%BD%E7%A7%91%E5%AD%A6%E9%99%A2%E5%A4%A7%E5%AD%A6-Rank-7"><span class="toc-number">1.4.</span> <span class="toc-text">中国科学院大学-Rank 7</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-2"><span class="toc-number">1.4.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E6%BB%A4%E6%B3%A2"><span class="toc-number">1.4.2.</span> <span class="toc-text">自适应滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DCU-Net"><span class="toc-number">1.4.3.</span> <span class="toc-text">DCU-Net</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tiny-DCU-Net"><span class="toc-number">1.4.4.</span> <span class="toc-text">Tiny DCU-Net</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A5%BF%E5%8C%97%E5%B7%A5%E4%B8%9A%E5%A4%A7%E5%AD%A6-Rank-8"><span class="toc-number">1.5.</span> <span class="toc-text">西北工业大学-Rank 8</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-3"><span class="toc-number">1.5.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="toc-number">1.5.2.</span> <span class="toc-text">模型架构</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#AEC-Challenge-2022"><span class="toc-number">2.</span> <span class="toc-text">AEC Challenge 2022</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Baidu-Rank-1"><span class="toc-number">2.1.</span> <span class="toc-text">Baidu-Rank 1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-4"><span class="toc-number">2.1.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84-1"><span class="toc-number">2.1.2.</span> <span class="toc-text">模型架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B8%E4%BD%8D%E7%BC%96%E7%A0%81%E5%99%A8%EF%BC%88PE%EF%BC%89"><span class="toc-number">2.1.2.1.</span> <span class="toc-text">相位编码器（PE）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%91%E5%B8%A6%E5%90%88%E5%B9%B6%E5%92%8C%E5%88%86%E5%89%B2%EF%BC%88BM-%E5%92%8C-BS%EF%BC%89"><span class="toc-number">2.1.2.2.</span> <span class="toc-text">频带合并和分割（BM 和 BS）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#T-F-%E5%8D%B7%E7%A7%AF%E6%A8%A1%E5%9D%97%EF%BC%88TFCM%EF%BC%89"><span class="toc-number">2.1.2.3.</span> <span class="toc-text">T-F 卷积模块（TFCM）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%B4%E5%90%91%E8%87%AA%E6%B3%A8%E6%84%8F%E5%8A%9B%EF%BC%88ASA%EF%BC%89"><span class="toc-number">2.1.2.4.</span> <span class="toc-text">轴向自注意力（ASA）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A2%91%E7%8E%87%E4%B8%8A%E9%87%87%E6%A0%B7%E5%92%8C%E4%B8%8B%E9%87%87%E6%A0%B7%EF%BC%88FD-%E5%92%8C-FU%EF%BC%89"><span class="toc-number">2.1.2.5.</span> <span class="toc-text">频率上采样和下采样（FD 和 FU）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A9%E7%A0%81%E4%BC%B0%E8%AE%A1%E5%92%8C%E5%BA%94%E7%94%A8%EF%BC%88MEA%EF%BC%89"><span class="toc-number">2.1.2.6.</span> <span class="toc-text">掩码估计和应用（MEA）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kuaishou-Rank-2"><span class="toc-number">2.2.</span> <span class="toc-text">Kuaishou-Rank 2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">2.2.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%86%85%E8%9E%8D%E5%90%88"><span class="toc-number">2.2.2.</span> <span class="toc-text">网络内融合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E9%97%B4%E8%9E%8D%E5%90%88"><span class="toc-number">2.2.3.</span> <span class="toc-text">网络间融合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%BD%E9%A2%91%E6%8D%9F%E5%A4%B1%E8%9E%8D%E5%90%88"><span class="toc-number">2.2.4.</span> <span class="toc-text">宽频损失融合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E9%A2%91%E5%B8%A6%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.5.</span> <span class="toc-text">全频带系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A5%BF%E5%8C%97%E5%B7%A5%E4%B8%9A%E5%A4%A7%E5%AD%A6-Rank-3"><span class="toc-number">2.3.</span> <span class="toc-text">西北工业大学-Rank 3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-5"><span class="toc-number">2.3.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%BB%A4%E6%B3%A2"><span class="toc-number">2.3.2.</span> <span class="toc-text">线性滤波</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFTNN"><span class="toc-number">2.3.3.</span> <span class="toc-text">GFTNN</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Phase-aware-Speech-Enhancement-with-Deep-Complex-U-Net%EF%BC%882019-ICLR%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">Phase-aware Speech Enhancement with Deep Complex U-Net（2019 ICLR）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">网络架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%81%E5%9D%90%E6%A0%87%E5%A4%8D%E6%95%B0%E6%8E%A9%E7%A0%81"><span class="toc-number">3.2.</span> <span class="toc-text">极坐标复数掩码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Acoustic-Echo-Cancellation-by-Combining-Adaptive-Digital-Filter-and-Recurrent-Neural-Network%EF%BC%882020-InterSpeech%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">Acoustic Echo Cancellation by Combining Adaptive Digital Filter and Recurrent Neural Network（2020 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E6%BB%A4%E6%B3%A2%E5%99%A8-1"><span class="toc-number">4.1.</span> <span class="toc-text">自适应滤波器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="toc-number">4.2.</span> <span class="toc-text">网络结构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DCCRN-Deep-Complex-Convolution-Recurrent-Network-for-Phase-Aware-Speech-Enhancement%EF%BC%882020-InterSpeech%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement（2020 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84-1"><span class="toc-number">5.1.</span> <span class="toc-text">网络结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87"><span class="toc-number">5.2.</span> <span class="toc-text">训练目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-1"><span class="toc-number">5.3.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#CAD-AEC-Context-Aware-Deep-Acoustic-Echo-Cancellation%EF%BC%882020-ICASSP%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">CAD-AEC: Context-Aware Deep Acoustic Echo Cancellation（2020 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7%E6%A8%A1%E5%9E%8B-6"><span class="toc-number">6.1.</span> <span class="toc-text">信号模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E6%BB%A4%E6%B3%A2-1"><span class="toc-number">6.2.</span> <span class="toc-text">自适应滤波</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%A8%A1%E5%9D%97"><span class="toc-number">6.3.</span> <span class="toc-text">上下文注意力模块</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#U-Convolution-Based-Residual-Echo-Suppression-with-Multiple-Encoders%EF%BC%882021-ICASSP%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">U-Convolution Based Residual Echo Suppression with Multiple Encoders（2021 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc-number">7.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95"><span class="toc-number">7.2.</span> <span class="toc-text">方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E7%BB%B4%E5%8D%B7%E7%A7%AF%E7%BC%96%E7%A0%81%E5%99%A8"><span class="toc-number">7.2.1.</span> <span class="toc-text">一维卷积编码器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E6%88%90%E5%9D%97"><span class="toc-number">7.2.2.</span> <span class="toc-text">集成块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A9%E7%A0%81%E4%BC%B0%E8%AE%A1%E7%BD%91%E7%BB%9C"><span class="toc-number">7.2.3.</span> <span class="toc-text">掩码估计网络</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Acoustic-Echo-Cancellation-with-Cross-Domain-Learning%EF%BC%882021-InterSpeech%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">Acoustic Echo Cancellation with Cross-Domain Learning（2021 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-1"><span class="toc-number">8.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TDC-%E6%A8%A1%E5%9D%97"><span class="toc-number">8.2.</span> <span class="toc-text">TDC 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AEC-%E6%A8%A1%E5%9D%97"><span class="toc-number">8.3.</span> <span class="toc-text">AEC 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TD-NN-%E6%A8%A1%E5%9D%97"><span class="toc-number">8.4.</span> <span class="toc-text">TD-NN 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83"><span class="toc-number">8.5.</span> <span class="toc-text">训练</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Combining-Adaptive-Filtering-And-Complex-Valued-Deep-Postfiltering-For-Acoustic-Echo-Cancellation%EF%BC%882021-ICASSP%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">Combining Adaptive Filtering And Complex-Valued Deep Postfiltering For Acoustic Echo Cancellation（2021 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-2"><span class="toc-number">9.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E8%87%AA%E9%80%82%E5%BA%94%E6%BB%A4%E6%B3%A2"><span class="toc-number">9.2.</span> <span class="toc-text">线性自适应滤波</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E6%BB%A4%E6%B3%A2%E7%9A%84%E5%A4%8D%E5%80%BC-DNN"><span class="toc-number">9.3.</span> <span class="toc-text">后滤波的复值 DNN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87%E5%92%8C%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">9.4.</span> <span class="toc-text">训练目标和损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Residual-Echo-and-Noise-Cancellation-with-Feature-Attention-Module-and-Multi-domain-Loss-Function%EF%BC%882021-InterSpeech%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">Residual Echo and Noise Cancellation with Feature Attention Module and Multi-domain Loss Function（2021 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-3"><span class="toc-number">10.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84-2"><span class="toc-number">10.2.</span> <span class="toc-text">模型架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E6%B3%A8%E6%84%8F%E6%A8%A1%E5%9D%97"><span class="toc-number">10.3.</span> <span class="toc-text">特征注意模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-2"><span class="toc-number">10.4.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Y2-Net-FCRN-for-Acoustic-Echo-and-Noise-Suppression%EF%BC%882021-InterSpeech%EF%BC%89"><span class="toc-number">11.</span> <span class="toc-text">Y2-Net FCRN for Acoustic Echo and Noise Suppression（2021 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84-3"><span class="toc-number">11.1.</span> <span class="toc-text">模型架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-3"><span class="toc-number">11.2.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Deep-Adaptive-AEC-Hybrid-of-Deep-Learning-and-Adaptive-Acoustic-Echo-Cancellation%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">12.</span> <span class="toc-text">Deep Adaptive AEC: Hybrid of Deep Learning and Adaptive Acoustic Echo Cancellation（2022 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-4"><span class="toc-number">12.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DNN-%E6%A8%A1%E5%9D%97"><span class="toc-number">12.2.</span> <span class="toc-text">DNN 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7-AEC"><span class="toc-number">12.3.</span> <span class="toc-text">线性 AEC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-4"><span class="toc-number">12.4.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NN3A-Neural-Network-supported-Acoustic-Echo-Cancellation-Noise-Suppression-and-Automatic-Gain-Control-for-Real-Time-Communications%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">NN3A: Neural Network supported Acoustic Echo Cancellation, Noise Suppression and Automatic Gain Control for Real-Time Communications（2022 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-5"><span class="toc-number">13.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%BB%A4%E6%B3%A2%E5%99%A8"><span class="toc-number">13.2.</span> <span class="toc-text">线性滤波器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E4%BB%BB%E5%8A%A1%E6%A8%A1%E5%9E%8B"><span class="toc-number">13.3.</span> <span class="toc-text">多任务模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E5%A4%84%E7%90%86"><span class="toc-number">13.4.</span> <span class="toc-text">后处理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Deep-Adaptation-Control-for-Acoustic-Echo-Cancellation%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">14.</span> <span class="toc-text">Deep Adaptation Control for Acoustic Echo Cancellation（2022 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-6"><span class="toc-number">14.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E8%AE%B2%E4%B8%AD%E7%9A%84%E9%80%9A%E7%94%A8-NLMS-%E6%BB%A4%E6%B3%A2%E5%99%A8"><span class="toc-number">14.2.</span> <span class="toc-text">双讲中的通用 NLMS 滤波器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NN-%E6%8E%A8%E6%96%AD%E6%9C%80%E4%BC%98%E6%AD%A5%E9%95%BF"><span class="toc-number">14.3.</span> <span class="toc-text">NN 推断最优步长</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DeepFilterNet-A-Low-Complexity-Speech-Enhancement-Framework-for-Full-Band-Audio-based-on-Deep-Filtering%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">15.</span> <span class="toc-text">DeepFilterNet: A Low Complexity Speech Enhancement Framework for Full-Band Audio based on Deep Filtering（2022 ICASSP）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-7"><span class="toc-number">15.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E6%A6%82%E8%BF%B0"><span class="toc-number">15.2.</span> <span class="toc-text">模型概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DNN-%E6%A8%A1%E5%9E%8B-1"><span class="toc-number">15.3.</span> <span class="toc-text">DNN 模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-5"><span class="toc-number">15.4.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DeepFilterNet2-Towards-Real-Time-Speech-Enhancement-on-Embedded-Devices-for-Full-Band-Audio%EF%BC%882022-IWAENC%EF%BC%89"><span class="toc-number">16.</span> <span class="toc-text">DeepFilterNet2: Towards Real-Time Speech Enhancement on Embedded Devices for Full-Band Audio（2022 IWAENC）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89%E5%92%8C%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="toc-number">16.1.</span> <span class="toc-text">问题定义和模型架构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PercepNet-A-Phase-and-SNR-Aware-PercepNet-for-Real-Time-Speech-Enhancement%EF%BC%882022-InterSpeech%EF%BC%89"><span class="toc-number">17.</span> <span class="toc-text">PercepNet+: A Phase and SNR Aware PercepNet for Real-Time Speech Enhancement（2022 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E4%BD%8D%E6%84%9F%E7%9F%A5%E7%BB%93%E6%9E%84"><span class="toc-number">17.1.</span> <span class="toc-text">相位感知结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E5%99%AA%E6%AF%94%E4%BC%B0%E8%AE%A1%E5%99%A8%E4%B8%8E%E4%BF%A1%E5%99%AA%E6%AF%94%E5%88%87%E6%8D%A2%E5%90%8E%E5%A4%84%E7%90%86"><span class="toc-number">17.2.</span> <span class="toc-text">信噪比估计器与信噪比切换后处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SNR-estimator"><span class="toc-number">17.2.1.</span> <span class="toc-text">SNR estimator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SNR-switched-MMSE-LSA-post-processing"><span class="toc-number">17.2.2.</span> <span class="toc-text">SNR-switched MMSE-LSA post-processing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%9B%AE%E6%A0%87%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="toc-number">17.3.</span> <span class="toc-text">多目标损失函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TF-GRU-%E5%9D%97"><span class="toc-number">17.4.</span> <span class="toc-text">TF-GRU 块</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Personalized-Acoustic-Echo-Cancellation-for-Full-duplex-Communications%EF%BC%882022-InterSpeech%EF%BC%89"><span class="toc-number">18.</span> <span class="toc-text">Personalized Acoustic Echo Cancellation for Full-duplex Communications（2022 InterSpeech）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89-8"><span class="toc-number">18.1.</span> <span class="toc-text">问题定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E5%BE%81%E6%8F%90%E5%8F%96"><span class="toc-number">18.2.</span> <span class="toc-text">特征提取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Speaker-Encoder"><span class="toc-number">18.3.</span> <span class="toc-text">Speaker Encoder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GTCNN"><span class="toc-number">18.4.</span> <span class="toc-text">GTCNN</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E5%99%A8"><span class="toc-number">18.4.1.</span> <span class="toc-text">编码器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GTCN-%E5%B1%82"><span class="toc-number">18.4.2.</span> <span class="toc-text">GTCN 层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#S-GTCN-%E5%9D%97"><span class="toc-number">18.4.3.</span> <span class="toc-text">S-GTCN 块</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0-6"><span class="toc-number">18.5.</span> <span class="toc-text">损失函数</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Conv-TasNet%EF%BC%882019%EF%BC%89"><span class="toc-number">19.</span> <span class="toc-text">Conv-TasNet（2019）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#A-Complex-Spectral-Mapping-with-Inplace-Convolution-Recurrent-Neural-Networks-For-Acoustic-Echo-Cancellation%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">20.</span> <span class="toc-text">A Complex Spectral Mapping with Inplace Convolution Recurrent Neural Networks For Acoustic Echo Cancellation（2022 ICASSP）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NeuralEcho%EF%BC%882022-ICASSP%EF%BC%89"><span class="toc-number">21.</span> <span class="toc-text">NeuralEcho（2022 ICASSP）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-number">22.</span> <span class="toc-text">数据集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%84%E4%BB%B7%E6%8C%87%E6%A0%87"><span class="toc-number">23.</span> <span class="toc-text">评价指标</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/04/AEC%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" title="AEC论文阅读">AEC论文阅读</a><time datetime="2022-09-04T08:59:41.000Z" title="Created 2022-09-04 16:59:41">2022-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/18/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91Query-Reformulation-for-Descriptive-Queries-of-Jargon-Words-Using-a-Knowledge-Graph-based-on-a-Dictionary/" title="【论文解读】Query Reformulation for Descriptive Queries of Jargon Words Using a Knowledge Graph based on a Dictionary">【论文解读】Query Reformulation for Descriptive Queries of Jargon Words Using a Knowledge Graph based on a Dictionary</a><time datetime="2022-04-18T06:43:09.000Z" title="Created 2022-04-18 14:43:09">2022-04-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/15/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91Answering%20Natural%20Language%20Questions%20by%20Subgraph%20Matching%20over%20Knowledge%20Graphs/" title="【论文解读】Answering Natural Language Questions by Subgraph Matching over Knowledge Graphs">【论文解读】Answering Natural Language Questions by Subgraph Matching over Knowledge Graphs</a><time datetime="2022-04-15T06:57:58.000Z" title="Created 2022-04-15 14:57:58">2022-04-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/15/%E3%80%90%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E3%80%91Query%20Expansion%20and%20Entity%20Weighting%20for%20Query%20Reformulation%20Retrieval%20in%20Voice%20%20Assistant%20Systems/" title="【论文解读】Query Expansion and Entity Weighting for Query Reformulation Retrieval in Voice Assistant Systems">【论文解读】Query Expansion and Entity Weighting for Query Reformulation Retrieval in Voice Assistant Systems</a><time datetime="2022-04-15T06:51:05.000Z" title="Created 2022-04-15 14:51:05">2022-04-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/04/03/Pre-trained%20Language%20Models/" title="Pre-trained Language Models">Pre-trained Language Models</a><time datetime="2022-04-03T07:05:22.000Z" title="Created 2022-04-03 15:05:22">2022-04-03</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/2.png')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By CSU-RoyCheng</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back To Top"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.2
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container:not\([display]\)').forEach(node => {
+            const target = node.parentNode
+            if (target.nodeName.toLowerCase() === 'li') {
+              target.parentNode.classList.add('has-jax')
+            } else {
+              target.classList.add('has-jax')
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.css"><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
